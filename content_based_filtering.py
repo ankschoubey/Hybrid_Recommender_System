@@ -20,6 +20,3 @@ class ContentBasedFiltering:
 
     def predict_by_item_similarirty(self, item_id):
         return np.argsort(self.item_similarities[item_id])[::-1][:self.limit]
-
-c = ContentBasedFiltering()
-predictions = c.predict_by_item_similarirty(0)
