@@ -2,6 +2,7 @@ import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 import pickle
 import pathlib
+from functools import reduce
 
 def reverse_argsort(arg):
     return np.argsort(arg)[::-1]
@@ -25,3 +26,6 @@ def save_pickle(object, name):
 
 def list_union(a, b):
     return list(set(a) | set(b))
+
+def union(*lists):
+    return reduce(np.union1d, (lists))
