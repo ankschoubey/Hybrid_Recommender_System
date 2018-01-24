@@ -1,6 +1,6 @@
 import numpy as np
 import core
-
+from dataset import Database
 class CollaborativeFiltering:
 
     def limit_number_of_recommendations(self,limit):
@@ -19,7 +19,7 @@ class CollaborativeFiltering:
             return
 
         self.user_similarities = core.pairwise_cosine(self.ratings)
-        core.save_pickle(self.user_similarities, file_name)
+        #core.save_pickle(self.user_similarities, file_name)
 
     def generate_item_similarity(self, clear_cache):
         file_name = 'cf_item_similarity.pickle'
@@ -29,10 +29,11 @@ class CollaborativeFiltering:
         data = self.ratings.transpose()
         data[data > 0] = 1
         self.item_similarities = core.pairwise_cosine(data)
-        core.save_pickle(self.item_similarities, file_name)
+        #core.save_pickle(self.item_similarities, file_name)
 
     def predict_by_item_similarirty(self, item_id):
-        return np.argsort(self.item_similarities[item_id])[::-1][:self.limit]
+        arguments_sorted =  np.argsort(self.item_similarities[item_id])[::-1][:self.limit]
+        return np.delete(arguments_sorted, [0])
 
     def predict_by_user_similarity(self, user_id):
         top_10_similar_users = np.argsort(self.user_similarities[user_id])[::-1][1:11]
