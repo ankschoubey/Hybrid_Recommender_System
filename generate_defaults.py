@@ -1,44 +1,51 @@
 import json
 from sqlalchemy.engine.url import URL
 import core
+import os
 
-def database(choice):
-    postgre = ['username','password','host','port','database']
-    db_info = {}
-    later_append = ''
-
+def database():
+    print('Enter info about SQL database:')
     mysql = ['username','password','host','port','database']
-    sqlite = ['database']
-    db_info = {'drivername': 'postgres'}
-    if choice == 1:
-        db_list = postgre
-        db_info['drivername']='postgres'
-    elif choice == 2:
-        db_list = mysql
-        db_info['drivername']='mysql+mysqldb'
-        later_append ='?charset=utf8mb4'
-    else:
-        db_info['drivername']='sqlite'
-        db_list = sqlite
 
+    db_info = {'drivername': 'mysql+mysqldb'}
+    later_append ='?charset=utf8mb4'
 
-    for i in db_list:
-        db_info[i]=input('Enter ' + i)
+    for i in mysql:
+        db_info[i]=input('Enter ' + i+': ')
 
-    return str(URL(**db_info))+later_append
+    url1 = str(URL(**db_info))+later_append
+
+    db_info['password'] = ''
+
+    url2 = str(URL(**db_info))+later_append
+
+    return (url1,url2)
+
+def get_themoviedb_api():
+    api = input('\nGet your API Key from: https://www.themoviedb.org/settings/api\nThen enter TheMovieDB API Key here: ')
+
+    while(len(api))!=32:
+        api = input('\nInvalid API Key. Need 32 characters.\nEnter Valid TheMovieDB API Key here:')
+    return api
+
+def get_dataset():
+    valid = False
+    files = ['ratings.csv', 'movies.csv', 'links.csv', 'tags.csv']
+    while not valid:
+        valid = True
+        path = input('\nEnter MovieLens Dataset Location on your computer: ')
+        for i in files:
+            if not os.path.exists(path+'/'+i):
+                valid = False
+                print('Could not found:',path+'/'+i)
+                break
+    return path
 
 def generate_defaults():
 
-    moviedb_id = input('Enter TheMovieDB API Key:')
+    moviedb_id = get_themoviedb_api()
 
-    choice = 4
-
-    while choice<1 or choice>3:
-        choice = int(input('Enter choice of database\n1. PostGres\n2.MySQL\n3.SQLite\nUse Option 3 if you don\'t have Server Setup\n'))
-
-    sql_defaults = database(choice)
-
-    print(sql_defaults)
+    sql_defaults = database()
 
     movie_lens_dataset_location = input('\nEnter MovieLens Dataset Location on your computer: ')
 
@@ -47,4 +54,7 @@ def generate_defaults():
     defaults['database'] = sql_defaults
     defaults['dataset'] = movie_lens_dataset_location
 
+    #print(defaults)
     core.save_pickle(defaults,'defaults.pickle')
+
+#generate_defaults()

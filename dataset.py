@@ -4,15 +4,11 @@ import numpy as np
 from scipy import sparse
 import sqlalchemy
 
-# Force Reset MySQL Password: UPDATE mysql.user SET Password=PASSWORD('root') WHERE User='root';
 # users = np.unique(list_of_users)
-'''        '''
 class Database:
-    def __init__(self, user='root', password='',localhost='127.0.0.1',port='3306', database='movielens'):
-        # if OperationalError 1045 occurs use no password
-        self.engine1 = sqlalchemy.create_engine('mysql+mysqldb://'+user+':'+password+'@'+localhost+':'+port+'/'+database+'?charset=utf8mb4')
-        self.engine2 = sqlalchemy.create_engine('mysql+mysqldb://'+user+':'+'root'+'@'+localhost+':'+port+'/'+database+'?charset=utf8mb4')
-        print(2)
+    def __init__(self):
+        self.engine1, self.engine2 =  core.load_pickle('defaults.pickle')['database']
+
     def get(self, table, columns = ['*'],where = ''):
         if len(where):
             where= ' WHERE '+where
@@ -20,8 +16,12 @@ class Database:
         #print(query)
         try:
             return  pd.read_sql(query, self.engine1)
-        except:
-            return  pd.read_sql(query, self.engine2)
+        except sqlalchemy.exc.OperationalError:
+            try:
+                return  pd.read_sql(query, self.engine2)
+            except sqlalchemy.exc.OperationalError as e:
+                print(e)
+                exit()
 
     def save_entire_df(self, frame, table_name, already_exists = 'replace'):
         try:

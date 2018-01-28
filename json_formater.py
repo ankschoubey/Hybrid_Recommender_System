@@ -5,6 +5,7 @@ import requests
 import pandas as pd
 import json
 import os
+
 class JSON_formatter:
     def __init__(self,database):
         self.db = database

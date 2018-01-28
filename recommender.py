@@ -15,7 +15,7 @@ db = Database()
 #ml = Movielens_Prepare(defaults['dataset'],db)
 ml = Movielens(db)
 
-movies_id = [0,2]
+movies_id = [2808,2808]
 
 cf = CollaborativeFiltering(ml.load_ratings(), clear_cache=False)
 
@@ -43,7 +43,7 @@ print(b)
 #print(a)
 
 print('Collaborative Filtering')
-cu = cf.predict_by_user_similarity(1)
+#cu = cf.predict_by_user_similarity(1)
 
 
 cb = cf.predict_by_item_similarirty(movies_id[1])
@@ -57,7 +57,7 @@ cf_title = ml.get_movie_names([item]).loc[0,'title']
 
 print('Mixed Hybridization')
 
-c = Hybridization.mixed(b,cu,cb)[0]
+c = Hybridization.mixed(b,cb)[0]#cu
 print(c, type(c))
 recommended['Recommended for you'] = c.tolist()
 recommended['Because you liked '+cb_title] =b
