@@ -3,12 +3,14 @@ import core
 import numpy as np
 from scipy import sparse
 import sqlalchemy
+from sqlalchemy.engine.reflection import Inspector
+
 
 # users = np.unique(list_of_users)
 class Database:
     def __init__(self):
         self.engine1, self.engine2 =  core.load_pickle('defaults.pickle')['database']
-
+        self.engine1, self.engine2 = sqlalchemy.create_engine(self.engine1), sqlalchemy.create_engine(self.engine2)
     def get(self, table, columns = ['*'],where = ''):
         if len(where):
             where= ' WHERE '+where
@@ -28,6 +30,15 @@ class Database:
             frame.to_sql(table_name, self.engine1, if_exists=already_exists)
         except:
             frame.to_sql(table_name, self.engine2, if_exists=already_exists)
+
+    def table_exists(self,table_name):
+        try:
+            inspector = Inspector.from_engine(self.engine1)
+        except:
+            inspector = Inspector.from_engine(self.engine2)
+        if table_name in inspector.get_table_names():
+            return  True
+        return False
 
 class Movielens_Prepare:
     set_categories = ['Action', 'Adventure', 'Animation', 'Children', 'Comedy', 'Crime', 'Documentary', 'Drama',

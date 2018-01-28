@@ -1,21 +1,49 @@
 import numpy as np
 import core
-import dataset
-
+from dataset import *
+import pandas as pd
 class ContentBasedFiltering:
 
     def limit_number_of_recommendations(self,limit):
         self.limit = limit
 
-    def __init__(self, categories):
-        self.movie_categories = categories
+    def __init__(self,db, regenerate = False):
+        self.db = db
+        self.table = 'content_based_similar_movies'
 
-        self.limit_number_of_recommendations(10)
-        self.generate_similarity_matrix()
+        if regenerate or not db.table_exists(self.table):
+            self.generate_similarity_matrix()
+            self.limit_number_of_recommendations(20)
+            self.store_top_n_similarities_to_database()
+
+    # fetch prediction from database
+    def predict(self, item_id):
+        prediction = self.db.get(self.table, where='id = ' + str(item_id))
+        prediction = prediction.drop(['index', 'id'], axis=1)
+        return prediction.values[0]
+
+    # regeneration of similarity matrix
 
     def generate_similarity_matrix(self):
-        self.item_similarities = core.pairwise_cosine(self.movie_categories)
+        ml = Movielens(self.db)
+        self.item_similarities = core.pairwise_cosine(ml.load_complete_movie_info())
 
-    def predict_by_item_similarirty(self, item_id):
-        arguments_sorted = np.argsort(self.item_similarities[item_id])[::-1][:self.limit]
-        return np.delete(arguments_sorted,[0])
+    def predict_using_similarirty_matrix(self, item_id):
+        arguments_sorted = np.argsort(self.item_similarities[item_id])[::-1]
+
+        # select everything except item_id else same movie will be recommended
+        arguments_sorted = arguments_sorted[arguments_sorted!=item_id]
+
+        #limit to number of output
+        arguments_sorted = arguments_sorted[: self.limit+1]
+
+        return arguments_sorted
+
+    def store_top_n_similarities_to_database(self):
+        similar_movies = []
+        for i in range(0, self.item_similarities.shape[0]):
+            predicted = self.predict_using_similarirty_matrix(i)
+            similar_movies.append(predicted)
+        df = pd.DataFrame(similar_movies)
+        df['id']=df.index
+        self.db.save_entire_df(df, 'content_based_similar_movies')

@@ -15,7 +15,7 @@ db = Database()
 #ml = Movielens_Prepare(defaults['dataset'],db)
 ml = Movielens(db)
 
-movies_id = [2808,2808]
+movies_id = [5,5]
 
 cf = CollaborativeFiltering(ml.load_ratings(), clear_cache=False)
 
@@ -27,7 +27,7 @@ print(ml.get_movie_names([a[0]]))
 '''
 recommended = {}
 
-cb = ContentBasedFiltering(ml.load_complete_movie_info())
+cb = ContentBasedFiltering(db)
 item = movies_id[0]
 cb_title = ml.get_movie_names([item]).loc[0,'title']
 #print(a, type(a))
@@ -36,9 +36,9 @@ print('Similarity for item')
 
 print('Content Based Filtering')
 
-b = cb.predict_by_item_similarirty(item).tolist()
+b = cb.predict(item).tolist()
 print(b)
-#a = ml.get_movie_names(b)
+print#a = ml.get_movie_names(b)
 
 #print(a)
 
@@ -68,7 +68,7 @@ recommended['User who liked '+cf_title+'also liked this']  =cb.tolist()
 
 formatter = JSON_formatter(db)
 json1 = formatter.format(recommended)
-print(json1)
+#print(json1)
 import json
 parsed = json.loads(json1)
 print(json.dumps(parsed, indent=4, sort_keys=True))
