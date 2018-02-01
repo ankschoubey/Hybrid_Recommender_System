@@ -6,6 +6,9 @@ from content_based_filtering import ContentBasedFiltering
 from hybridization import Hybridization
 import generate_defaults
 from json_formater import JSON_formatter
+import json
+
+# Load Database Connecter and Movielens
 
 if not core.file_exists('defaults.pickle'):
     generate_defaults.generate_defaults()
@@ -14,62 +17,55 @@ if not core.file_exists('defaults.pickle'):
     ml = Movielens_Prepare(defaults['dataset'],db)
 
 db = Database()
-#ml = Movielens_Prepare(defaults['dataset'],db)
 ml = Movielens(db)
 
-movies_id = [522,522]
+# recommendation on
+movies_id = 522
+movie_title = ml.get_movie_names([movies_id]).loc[0,'title']
+user_id = 2
+
+# Content Based Filtering
+cb = ContentBasedFiltering(db)
+
+print('Content Based Recommendation for', movie_title)
+cb_recommendation = cb.predict(movies_id)
+print(cb_recommendation)
+
+# Collaborative Filtering
 
 cf = CollaborativeFiltering(db, clear_cache=False)
 
-# # ''' User Based CF
-user_id = 2
+print('Collaborative Filtering Recommendation for item:',movie_title)
+cf_item_recommendation = cf.predict_for_item(movies_id)
+print(cf_item_recommendation)
+
+cf_user_recommendation = cf.predict_for_user(user_id)
+print('Collaborative Filtering Recommendation for user:', user_id)
+print(cf_user_recommendation)
+
+# Hybridization
+print('Mixed Hybridization')
+
+combination = Hybridization.mixed([cb_recommendation,cf_item_recommendation,cf_user_recommendation])
+print(combination, type(combination))
+
+# JSON Formatting
 
 recommended = {}
 
-cb = ContentBasedFiltering(db)
-item = movies_id[0]
-cb_title = ml.get_movie_names([item]).loc[0,'title']
-#print(a, type(a))
-print('Similarity for item')
-
-
-print('Content Based Filtering')
-
-b = cb.predict(item)
-print(b)
-
-
-print('Collaborative Filtering')
-
-cu = cf.predict_for_user(user_id)
-
-cb = cf.predict_for_item(movies_id[1])
-item = movies_id[1]
-
-cf_title = ml.get_movie_names([item]).loc[0,'title']
-
-print('Mixed Hybridization')
-
-print([b,cb,cu])
-c = Hybridization.mixed([b,cb,cu])
-print(c, type(c))
-recommended['Recommended for you'] = c.tolist()
-recommended['Because you liked '+cb_title] =b.tolist()
-recommended['User who liked '+cf_title+'also liked this']  =cb.tolist()
-#print(recommended)
-#a = ml.get_movie_names(c)
-#print(a)
+recommended['Recommended for you'] = combination.tolist()
+recommended['Because you liked '+movie_title] =cb_recommendation.tolist()
+recommended['User who liked '+movie_title+'also liked this']  =cf_user_recommendation.tolist()
 
 formatter = JSON_formatter(db)
 json1 = formatter.format(recommended)
-#print(json1)
 
-print(type(json1))
 json1.replace('\"','\\\"')
-print(json1)
-import json
 parsed = json.loads(json1)
+
 print(json.dumps(parsed, indent=4, sort_keys=True))
+
+# Send json to file
 
 with open('sample.json','w') as file:
    json.dump(parsed, file,indent=4)

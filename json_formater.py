@@ -93,7 +93,7 @@ class JSON_formatter:
         list_of_lists = list(dict.values())
         all_movies = self.union(list_of_lists)
 
-        print(all_movies)
+        #print(all_movies)
 
         movies_formatted = self.get_movies_formatted(all_movies)
         # for i in movies_formatted:

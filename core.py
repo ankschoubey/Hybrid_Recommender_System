@@ -31,7 +31,6 @@ def list_union(a, b):
     return list(set(a) | set(b))
 
 def union(lists):
-    print(lists)
     return reduce(np.union1d, lists)
 
 def current_seconds():
