@@ -31,6 +31,20 @@ class Database:
         except:
             frame.to_sql(table_name, self.engine2, if_exists=already_exists)
 
+    def update(self, table, columns,values,where):
+        mapping = []
+
+        for k,v in zip(columns, values):
+            #print(type(v))
+            if type(v) == str:
+                v = '"'+v+'"'
+            mapping.append(k+' = ' + v)
+        sql = 'UPDATE '+table+' SET ' +','.join(mapping)+ ' WHERE '+where+';'
+        #print(sql)
+        try:
+            self.engine1.execute(sql)
+        except:
+            self.engine2.execute(sql)
     def table_exists(self,table_name):
         try:
             inspector = Inspector.from_engine(self.engine1)
@@ -116,6 +130,7 @@ class Movielens_Prepare:
         df = pd.read_csv(self.source+'/ratings.csv')
         df['movieId'] = df['movieId'].map(self.movie_mapping)
         df['userId'] = df['userId'] - 1
+        df['ratings'] = df['ratings'].astype(int)
         self.database.save_entire_df(df, 'ratings')
 
         """

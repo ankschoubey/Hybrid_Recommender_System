@@ -4,6 +4,8 @@ import pickle
 import pathlib
 from functools import reduce
 import logging
+import datetime
+import pytz
 
 def reverse_argsort(arg):
     return np.argsort(arg)[::-1]
@@ -28,5 +30,13 @@ def save_pickle(object, name):
 def list_union(a, b):
     return list(set(a) | set(b))
 
-def union(*lists):
-    return reduce(np.union1d, (lists))
+def union(lists):
+    print(lists)
+    return reduce(np.union1d, lists)
+
+def current_seconds():
+    origin_date = datetime.datetime(1970,1,1,0,0,0,tzinfo=pytz.UTC)
+    current_date = datetime.datetime.now()
+    our_timezone = pytz.timezone('Asia/Kolkata')
+    current_date = our_timezone.localize(current_date)
+    return (current_date-origin_date).total_seconds()

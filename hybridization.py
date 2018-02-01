@@ -4,11 +4,12 @@ class Hybridization:
     def __init__(self):
         pass
 
-    def mixed(self,*lists):
+    @staticmethod
+    def mixed(lists):
         return core.union(lists)
 
     def switching(self):
         pass
 
-    def hybridize(self,*lists):
+    def hybridize(self,lists):
         return self.mixed(lists)
