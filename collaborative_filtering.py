@@ -29,6 +29,7 @@ class PrepareCollaborativeFiltering:
 
     def save_complete_item_similarities_to_database(self):
         similar_movies = []
+
         for i in range(0, self.ratings.shape[1]):
             predicted = self.predict_by_item_similarirty(i)
             similar_movies.append(predicted)
@@ -96,7 +97,6 @@ class PrepareCollaborativeFiltering:
             print(i)
             prediction = self.predict_by_user_similarity(i)
             recommendation.append(prediction)
-
         df = pd.DataFrame(recommendation)
         df['id'] = df.index
         print(df)
@@ -107,8 +107,9 @@ class CollaborativeFiltering:
     def limit_number_of_recommendations(self,limit):
         self.limit = limit
 
+
     def reload_conditions(self):
-        return not self.db.table_exists(cf_table['user']) or not self.db.table_exists(cf_table['item']) or not self.db.table_exists(cf_table['user_recommendation'])
+        return not self.db.table_exists(cf_table['user'],cf_table['item'],cf_table['user_recommendation'])
 
     def __init__(self, db, clear_cache=False):
         self.db = db
@@ -160,11 +161,3 @@ class CollaborativeFiltering:
         recommendation = recommendation.drop(['index','id'], axis =1)
         return recommendation.values[0]
         # return self.generate_prediction(user_id)
-
-
-
-    def update_similarity_matrix(self):
-        pass
-
-    def reload_data(self):
-        pass

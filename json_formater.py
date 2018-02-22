@@ -5,6 +5,7 @@ import requests
 import pandas as pd
 import json
 import os
+import logging
 
 class JSON_formatter:
     def __init__(self,database):
@@ -62,9 +63,20 @@ class JSON_formatter:
             self.db.save_entire_df(data, table_name='movie_info', already_exists='append')
 
     def get_movies_formatted(self, movie_ids):
-        df = self.get_movie_imdb_id(movie_ids)
+
+        data_not_in_database = self.db.record_exists(table='movie_info', column='id', values=movie_ids)[1]
+
+        df = self.get_movie_imdb_id(data_not_in_database)
+
+        for index, i in df.iterrows():
+            data = self.get_from_db(movie_ids[index])
+            if data.empty:
+                 self.get_from_api([movie_ids[index]])
+                 data = self.get_from_db(movie_ids[index])
 
         final_list = []
+        #print(df)
+
 
         for index,i in df.iterrows():
             data = self.get_from_db(movie_ids[index])
@@ -93,19 +105,18 @@ class JSON_formatter:
         list_of_lists = list(dict.values())
         all_movies = self.union(list_of_lists)
 
-        #print(all_movies)
 
         movies_formatted = self.get_movies_formatted(all_movies)
         # for i in movies_formatted:
         #     print(i)
 
         dict['movies'] = movies_formatted
-        print(dict.keys())
+        #print(dict.keys())
 
         return json.dumps(dict)
-
-#a = JSON_formatter(Database())
-#a.get_from_api([48])
-#b = a.format({'Popular movies':[1,3,4],'Recommender for you:':[10,1,2]})
-
-#print(b)
+#
+# a = JSON_formatter(Database())
+# #a.get_from_api([i for i in range(1,100)])
+# b = a.format({'Popular movies':[i for i in range(1,300)],'Recommender for you:':[9,3,56]})
+# #
+# # print(b)

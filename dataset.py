@@ -6,7 +6,6 @@ import sqlalchemy
 from sqlalchemy.engine.reflection import Inspector
 
 
-# users = np.unique(list_of_users)
 class Database:
     def __init__(self):
         self.engine1, self.engine2 =  core.load_pickle('defaults.pickle')['database']
@@ -45,14 +44,33 @@ class Database:
             self.engine1.execute(sql)
         except:
             self.engine2.execute(sql)
-    def table_exists(self,table_name):
+    def table_exists(self,*table_name):
         try:
             inspector = Inspector.from_engine(self.engine1)
         except:
             inspector = Inspector.from_engine(self.engine2)
-        if table_name in inspector.get_table_names():
-            return  True
-        return False
+        for i in list(table_name):
+            if i not in inspector.get_table_names():
+                return  False
+        return True
+
+    def record_exists(self,table, column, values):
+        if type(values) is not list:
+            values = [list]
+
+        exists = []
+        does_not_exist = []
+
+        for i in values:
+            answer=self.get(table, ['count('+column+')'], where=column + '= '+str(i)).iloc[0,0]
+
+            if answer == 1:
+                exists.append(i)
+            else:
+                does_not_exist.append(i)
+
+        return exists,does_not_exist
+
 
 class Movielens_Prepare:
     set_categories = ['Action', 'Adventure', 'Animation', 'Children', 'Comedy', 'Crime', 'Documentary', 'Drama',
@@ -103,8 +121,6 @@ class Movielens_Prepare:
         temp = raw.split('(')
         if len(temp[-1]) != 5 or len(temp) == 1:
             return [raw, '']
-        #print(temp)
-
         return [''.join(temp[:-1]), int(temp[-1].replace(')', ''))]
 
     def load_movies(self):
@@ -130,7 +146,7 @@ class Movielens_Prepare:
         df = pd.read_csv(self.source+'/ratings.csv')
         df['movieId'] = df['movieId'].map(self.movie_mapping)
         df['userId'] = df['userId'] - 1
-        df['ratings'] = df['ratings'].astype(int)
+        df['rating'] = df['rating'].astype(int)
         self.database.save_entire_df(df, 'ratings')
 
         """

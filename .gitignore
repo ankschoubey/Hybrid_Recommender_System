@@ -112,4 +112,9 @@ movie_images
 recommender_defaults
 *.db
 *.json
-*.log
+*.log*.ipynb
+
+*.xml
+*.iml
+*.xml
+*.xml

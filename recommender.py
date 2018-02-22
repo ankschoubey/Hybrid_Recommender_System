@@ -7,29 +7,39 @@ from hybridization import Hybridization
 import generate_defaults
 from json_formater import JSON_formatter
 import json
+import logging
 
-# Load Database Connecter and Movielens
+logging.basicConfig(filename = 'execution.log', level = logging.DEBUG)
+
+logging.info('Loading Database Connecter and Movielens')
 
 if not core.file_exists('defaults.pickle'):
     generate_defaults.generate_defaults()
-    defaults = core.load_pickle('defaults.pickle')
-    db = Database()
-    ml = Movielens_Prepare(defaults['dataset'],db)
+
+defaults = core.load_pickle('defaults.pickle')
 
 db = Database()
+
+if not db.table_exists(['ratings', 'movies', 'links', 'movies_mapped']):
+    ml = Movielens_Prepare(defaults['dataset'],db)
+
 ml = Movielens(db)
 
 # recommendation on
-movies_id = 522
-movie_title = ml.get_movie_names([movies_id]).loc[0,'title']
-user_id = 2
+movies_id = 200
 
-# Content Based Filtering
+movie_title = ml.get_movie_names([movies_id]).loc[0,'title']
+user_id = 3
+
+logging.info('Performing Content Based Filtering')
+
 cb = ContentBasedFiltering(db)
 
 print('Content Based Recommendation for', movie_title)
 cb_recommendation = cb.predict(movies_id)
 print(cb_recommendation)
+
+logging.info('Performing Content Based Filtering')
 
 # Collaborative Filtering
 
