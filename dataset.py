@@ -8,7 +8,7 @@ from sqlalchemy.engine.reflection import Inspector
 
 class Database:
     def __init__(self):
-        self.engine1, self.engine2 =  core.load_pickle('defaults.pickle')['database']
+        self.engine1, self.engine2 =  core.json_read('defaults.json')['database']
         self.engine1, self.engine2 = sqlalchemy.create_engine(self.engine1), sqlalchemy.create_engine(self.engine2)
     def get(self, table, columns = ['*'],where = ''):
         if len(where):

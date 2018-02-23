@@ -13,10 +13,10 @@ logging.basicConfig(filename = 'execution.log', level = logging.DEBUG)
 
 logging.info('Loading Database Connecter and Movielens')
 
-if not core.file_exists('defaults.pickle'):
+if not core.file_exists('defaults.json'):
     generate_defaults.generate_defaults()
 
-defaults = core.load_pickle('defaults.pickle')
+defaults = core.json_read('defaults.json')
 
 db = Database()
 

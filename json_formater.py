@@ -10,7 +10,7 @@ import logging
 class JSON_formatter:
     def __init__(self,database):
         self.db = database
-        self.movie_db = TheMovieDB(load_pickle('defaults.pickle')['moviedb_api_key'])
+        self.movie_db = TheMovieDB(json_read('defaults.json')['moviedb_api_key'])
 
     def get_movie_imdb_id(self, ids):
         ids = [str(i) for i in ids]
@@ -63,21 +63,21 @@ class JSON_formatter:
             self.db.save_entire_df(data, table_name='movie_info', already_exists='append')
 
     def get_movies_formatted(self, movie_ids):
-
-        data_not_in_database = self.db.record_exists(table='movie_info', column='id', values=movie_ids)[1]
-
-        df = self.get_movie_imdb_id(data_not_in_database)
-
-        for index, i in df.iterrows():
-            data = self.get_from_db(movie_ids[index])
-            if data.empty:
-                 self.get_from_api([movie_ids[index]])
-                 data = self.get_from_db(movie_ids[index])
-
-        final_list = []
+        #
+        # data_not_in_database = self.db.record_exists(table='movie_info', column='id', values=movie_ids)[1]
+        #
+        # df = self.get_movie_imdb_id(data_not_in_database)
+        #
+        # for index, i in df.iterrows():
+        #     data = self.get_from_db(movie_ids[index])
+        #     if data.empty:
+        #          self.get_from_api([movie_ids[index]])
+        #          data = self.get_from_db(movie_ids[index])
+        #
+        #
         #print(df)
-
-
+        final_list = []
+        df = self.get_movie_imdb_id(movie_ids)
         for index,i in df.iterrows():
             data = self.get_from_db(movie_ids[index])
 

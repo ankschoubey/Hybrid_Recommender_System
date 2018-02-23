@@ -54,7 +54,5 @@ def generate_defaults():
     defaults['database'] = sql_defaults
     defaults['dataset'] = movie_lens_dataset_location
 
-    #print(defaults)
-    core.save_pickle(defaults,'defaults.pickle')
-
-#generate_defaults()
+    with open('defaults.json','w') as file:
+        json.dump(defaults, file, indent=4)

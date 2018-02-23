@@ -1,6 +1,6 @@
 import requests
 import json
-from core import load_pickle
+import core
 class TheMovieDB:
 
     image_path = 'https://image.tmdb.org/t/p/w500'
@@ -9,7 +9,7 @@ class TheMovieDB:
         if API_Key:
             self.API_Key = API_Key
         else:
-            self.API_Key = load_pickle('defaults.pickle')['moviedb_api_key']
+            self.API_Key = core.json_read('defaults.json')['moviedb_api_key']
 
     @staticmethod
     def format_id(raw_id):

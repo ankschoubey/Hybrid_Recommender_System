@@ -6,6 +6,7 @@ from functools import reduce
 import logging
 import datetime
 import pytz
+import json
 
 def reverse_argsort(arg):
     return np.argsort(arg)[::-1]
@@ -39,3 +40,6 @@ def current_seconds():
     our_timezone = pytz.timezone('Asia/Kolkata')
     current_date = our_timezone.localize(current_date)
     return (current_date-origin_date).total_seconds()
+
+def json_read(filename):
+    return json.load(open(filename, 'r'))
