@@ -77,7 +77,7 @@ class JSON_formatter:
         #
         final_dict = {}
         df = self.get_movie_imdb_id(movie_ids)
-        print(df)
+        #print(df)
 
         for index,i in df.iterrows():
             data = self.get_from_db(movie_ids[index])

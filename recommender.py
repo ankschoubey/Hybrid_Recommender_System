@@ -20,7 +20,7 @@ defaults = core.json_read('defaults.json')
 
 db = Database()
 
-if not db.table_exists(['ratings', 'movies', 'links', 'movies_mapped']):
+if not db.table_exists('ratings', 'movies', 'links', 'movies_mapped'):
     ml = Movielens_Prepare(defaults['dataset'],db)
 
 ml = Movielens(db)
