@@ -75,9 +75,10 @@ class JSON_formatter:
         #          data = self.get_from_db(movie_ids[index])
         #
         #
-        #print(df)
-        final_list = []
+        final_dict = {}
         df = self.get_movie_imdb_id(movie_ids)
+        print(df)
+
         for index,i in df.iterrows():
             data = self.get_from_db(movie_ids[index])
 
@@ -88,9 +89,9 @@ class JSON_formatter:
             temp = {}
             for key, value in data.to_dict().items():
                 temp[key]= value[0]
-            final_list.append(temp)
+            final_dict[movie_ids[index]] =temp
 
-        return final_list
+        return final_dict
 
     def union(self,lists):
         final = set()
@@ -104,7 +105,6 @@ class JSON_formatter:
     def format(self,dict):
         list_of_lists = list(dict.values())
         all_movies = self.union(list_of_lists)
-
 
         movies_formatted = self.get_movies_formatted(all_movies)
         # for i in movies_formatted:
