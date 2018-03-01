@@ -87,11 +87,14 @@ def normalise_dataframe(df):
     for index, value in df.iterrows():
         # print(value)
         string_version = str(value.tolist())
-        new_index.append(count)
 
-        if string_version not in normalised_string_list:
+        try:
+            position = normalised_string_list.index(string_version)
+            new_index.append(position)
+        except:
             normalised_string_list.append(string_version)
             count = count + 1
+            new_index.append(count)
 
     df['normalised_key'] = new_index
 
