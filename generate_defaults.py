@@ -1,6 +1,5 @@
 import json
 from sqlalchemy.engine.url import URL
-import core
 import os
 
 def database():

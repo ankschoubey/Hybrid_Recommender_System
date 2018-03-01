@@ -1,15 +1,14 @@
 import pandas as pd
 import core
-import numpy as np
 from scipy import sparse
 import sqlalchemy
 from sqlalchemy.engine.reflection import Inspector
-
 
 class Database:
     def __init__(self):
         self.engine1, self.engine2 =  core.json_read('defaults.json')['database']
         self.engine1, self.engine2 = sqlalchemy.create_engine(self.engine1), sqlalchemy.create_engine(self.engine2)
+
     def get(self, table, columns = ['*'],where = ''):
         if len(where):
             where= ' WHERE '+where
@@ -44,6 +43,7 @@ class Database:
             self.engine1.execute(sql)
         except:
             self.engine2.execute(sql)
+
     def table_exists(self,*table_name):
         try:
             inspector = Inspector.from_engine(self.engine1)
@@ -148,17 +148,6 @@ class Movielens_Prepare:
         df['userId'] = df['userId'] - 1
         df['rating'] = df['rating'].astype(int)
         self.database.save_entire_df(df, 'ratings')
-
-        """
-        # make_ratings_matrix
-
-        self.rating_matrix = sparse.csr_matrix((df['rating'] , (df['userId'],df['movieId'])))
-        array_form = pd.DataFrame(self.rating_matrix.toarray())
-        ids = pd.DataFrame(array_form.index.values, columns=['user_id'])
-        output = pd.concat([ids, array_form], axis = 1)
-        self.similarity_matrix()
-        self.database.save_entire_df(output, 'ratings')
-        """
 
 class Movielens:
     movie_categories = ['Action', 'Adventure', 'Animation', 'Children', 'Comedy', 'Crime', 'Documentary', 'Drama',

@@ -1,17 +1,12 @@
-from dataset import *
-import numpy as np
 import core
+import generate_defaults
+import json
+
 from collaborative_filtering import CollaborativeFiltering
 from content_based_filtering import ContentBasedFiltering
+from dataset import *
 from hybridization import Hybridization
-import generate_defaults
 from json_formater import JSON_formatter
-import json
-import logging
-
-logging.basicConfig(filename = 'execution.log', level = logging.DEBUG)
-
-logging.info('Loading Database Connecter and Movielens')
 
 if not core.file_exists('defaults.json'):
     generate_defaults.generate_defaults()
@@ -31,15 +26,11 @@ movies_id = 200
 movie_title = ml.get_movie_names([movies_id]).loc[0,'title']
 user_id = 3
 
-logging.info('Performing Content Based Filtering')
-
 cb = ContentBasedFiltering(db)
 
 print('Content Based Recommendation for', movie_title)
 cb_recommendation = cb.predict(movies_id)
 print(cb_recommendation)
-
-logging.info('Performing Content Based Filtering')
 
 # Collaborative Filtering
 

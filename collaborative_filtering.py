@@ -6,7 +6,6 @@ cf_table={'item': 'cf_item_recommendation',
           'user': 'cf_n_similar_users',
           'user_recommendation': 'cf_user_recommendation'
           }
-
 class PrepareCollaborativeFiltering:
 
     def __init__(self,db):
