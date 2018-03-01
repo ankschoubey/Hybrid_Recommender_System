@@ -8,6 +8,7 @@ import datetime
 import pytz
 import json
 import os
+import pandas as pd
 # Logging
 
 LOG_FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
@@ -69,3 +70,36 @@ def current_seconds():
     current_date = our_timezone.localize(current_date)
     return (current_date-origin_date).total_seconds()
 
+# Data
+
+# pass in a dataframe, it will return key (normalised keys for original df, normalised dataframe)
+# only pass the dataframe with specific columns that needs normalisation
+def normalise_dataframe(df):
+    count = 0
+
+    original_index = df.index.values
+
+    new_index = []
+    count = 0
+    normalised_string_list = []
+    column_names = df.columns.values
+
+    for index, value in df.iterrows():
+        # print(value)
+        string_version = str(value.tolist())
+        new_index.append(count)
+
+        if string_version not in normalised_string_list:
+            normalised_string_list.append(string_version)
+            count = count + 1
+
+    df['normalised_key'] = new_index
+
+    normalised_list = []
+
+    for i in list(normalised_string_list):
+        normalised_list.append(json.loads(i))
+    normalised_df = pd.DataFrame(normalised_list, columns=column_names)
+    normalised_df['normalised_key'] = normalised_df.index.values
+
+    return pd.DataFrame(df['normalised_key']), normalised_df
