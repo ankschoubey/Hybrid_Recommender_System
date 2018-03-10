@@ -40,7 +40,7 @@ ncb_recommendation = nb.predict(movies_id)
 
 # for i in range(ml.load_complete_movie_info().shape[0]):
 #     ncb_recommendation = nb.predict(i)
-
+print(nb.export())
 end =  time()
 total_ncb = end - start
 
@@ -54,7 +54,7 @@ fitting = time() - start
 print('Fit time = ',fitting)
 cb_recommendation = cb.predict(movies_id)[:ncb_recommendation.shape[0]]
 
-print(cb.export())
+#print(cb.export())
 exit()
 # for i in range(ml.load_complete_movie_info().shape[0]):
 #     cb_recommendation = cb.predict(i)[:ncb_recommendation.shape[0]]

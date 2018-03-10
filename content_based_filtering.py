@@ -38,6 +38,12 @@ class Normalised_ContentBasedFiltering:
         similar_movies = core.reverse_argsort(self.normalised_similarity[movie_type])
         return similar_movies
 
+    def create_similarity_matrix(self):
+        if not self.similarity_flag:
+            # since upper part was a simple lookup finding similarity matrix is not compulsary
+            self.normalised_similarity = core.pairwise_cosine(self.normalised_data)
+            self.similarity_flag = True
+
     def predict(self, item_id, limit = 10):
         movie_type = self.normalise_mapper['normalised_key'].iloc[item_id]
 
@@ -47,11 +53,9 @@ class Normalised_ContentBasedFiltering:
         if selected_movies.shape[0]>limit:
              return selected_movies
 
+
         # If don't have the required number of movies of same type, find similar movie_type
-        if not self.similarity_flag:
-            # since upper part was a simple lookup finding similarity matrix is not compulsary
-            self.normalised_similarity = core.pairwise_cosine(self.normalised_data)
-            self.similarity_flag = True
+        self.create_similarity_matrix()
 
         similar_movies = self.similar_movies_of_type(movie_type)
 
@@ -59,3 +63,18 @@ class Normalised_ContentBasedFiltering:
             selected_movies = np.append(selected_movies,self.get_movies_of_type(movie_type))
             if selected_movies.shape[0] > limit:
                 return selected_movies
+
+    def export(self,limit=10):
+        self.create_similarity_matrix()
+
+        raw = []
+        for i in range(self.normalised_similarity.shape[0]):
+            raw.append(self.similar_movies_of_type(i)[:limit])
+
+        df = pd.DataFrame(raw)
+        df['id']=df.index.values
+
+        name = self.__class__.__name__ +'_'
+
+
+        return {name+'map': self.normalise_mapper, name+'data':self.normalised_data, name+'similarity': df}
