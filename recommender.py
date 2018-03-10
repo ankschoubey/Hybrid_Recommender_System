@@ -47,13 +47,15 @@ total_ncb = end - start
 # print(ncb_recommendation)
 
 start = time()
-cb = ContentBasedFiltering()
+cb = Simple_ContentBasedFiltering()
 cb.fit(ml.load_complete_movie_info())
 fitting = time() - start
 
 print('Fit time = ',fitting)
 cb_recommendation = cb.predict(movies_id)[:ncb_recommendation.shape[0]]
 
+print(cb.export())
+exit()
 # for i in range(ml.load_complete_movie_info().shape[0]):
 #     cb_recommendation = cb.predict(i)[:ncb_recommendation.shape[0]]
 end =  time()
@@ -68,7 +70,7 @@ print('number of same items ', np.intersect1d(cb_recommendation,ncb_recommendati
 
 # Collaborative Filtering
 
-cf = Simple_ContentBasedFiltering()
+cf = CollaborativeFiltering()
 cf.fit(ml.load_ratings())
 
 print('Collaborative Filtering Recommendation for item:',movie_title)

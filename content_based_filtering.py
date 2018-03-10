@@ -15,6 +15,15 @@ class Simple_ContentBasedFiltering:
 
         return arguments_sorted
 
+    def export(self, limit = 10):
+        raw = []
+        for i in range(self.item_similarities.shape[0]):
+            raw.append(self.predict(i)[:limit])
+
+        df = pd.DataFrame(raw)
+        df['id']=df.index.values
+        return { self.__class__.__name__: df}
+
 class Normalised_ContentBasedFiltering:
 
     similarity_flag = False
