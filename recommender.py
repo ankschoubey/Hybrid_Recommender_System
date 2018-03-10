@@ -3,7 +3,7 @@ import generate_defaults
 import json
 
 from collaborative_filtering import CollaborativeFiltering
-from content_based_filtering import ContentBasedFiltering
+from content_based_filtering import *
 from dataset import *
 from hybridization import Hybridization
 from json_formater import JSON_formatter
@@ -32,6 +32,8 @@ print('Content Based Recommendation for', movie_title)
 cb_recommendation = cb.predict(movies_id)
 print(cb_recommendation)
 
+ncb = Normalised_ContentBasedFiltering(db)
+exit()
 # Collaborative Filtering
 
 cf = CollaborativeFiltering(db, clear_cache=False)
