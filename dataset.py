@@ -167,6 +167,11 @@ class Movielens:
         df = self.db.get(table = 'movies', columns=['title'], where='movieId IN ('+ ','.join(ids)+')')
         return df
 
+    def get_movie_type(self, id):
+        id = str(id)
+        df = self.db.get(table = 'movies', columns = self.movie_categories, where='movieId IN ('+ id +')')
+        return df.columns[(df != 0).all()].tolist()
+
     def load_complete_movie_info(self):
         df = self.db.get(table = 'movies', columns = self.movie_categories)
         return df
@@ -175,4 +180,5 @@ class Movielens:
         ids = list(map(str,ids))
         df = self.db.get(table = 'movies', columns=self.movie_categories, where='movieId IN ('+ ','.join(ids)+')')
         print(df.head())
+
 

@@ -9,6 +9,8 @@ import pytz
 import json
 import os
 import pandas as pd
+import random
+
 # Logging
 
 LOG_FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
@@ -38,6 +40,11 @@ def pairwise_cosine(data):
 def file_exists(location):
     path = pathlib.Path(location)
     return path.exists()
+
+def randomly_select_items(array, limit=None):
+    if limit:
+        return random.choice(array)[:limit]
+    return random.choice(array)
 
 def union(lists):
     return reduce(np.union1d, lists)
@@ -75,8 +82,6 @@ def current_seconds():
 # pass in a dataframe, it will return key (normalised keys for original df, normalised dataframe)
 # only pass the dataframe with specific columns that needs normalisation
 def normalise_dataframe(df):
-    count = 0
-
     original_index = df.index.values
 
     new_index = []
@@ -93,8 +98,8 @@ def normalise_dataframe(df):
             new_index.append(position)
         except:
             normalised_string_list.append(string_version)
-            count = count + 1
             new_index.append(count)
+            count = count + 1
 
     df['normalised_key'] = new_index
 
