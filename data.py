@@ -206,7 +206,6 @@ def save_exports_to_db(data, db):
         db.save_entire_df(table_name=key, frame=value)
 
 class TheMovieDB:
-
     image_path = 'https://image.tmdb.org/t/p/w500'
 
     def __init__(self,API_Key=None):
@@ -237,14 +236,18 @@ class TheMovieDB:
 
         info = {}
         info['title'] = movie['title']
+        info['tagline'] = movie['tagline']
+        info['original_language']= movie['original_language']
         info['overview'] = movie['overview']
         if movie['poster_path']:
             info['poster'] = self.image_path + movie['poster_path']
         if movie['backdrop_path']:
             info['backdrop'] = self.image_path + movie['backdrop_path']
         info['video'] = movie['video']
+        info['production_countries'] = movie['production_countries']['name']
 
         return info
+
 
 class JSON_formatter:
     def __init__(self,database):
