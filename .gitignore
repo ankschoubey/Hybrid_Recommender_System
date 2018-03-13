@@ -120,3 +120,6 @@ recommender_defaults
 *.xml
 *.xml
 __pycache__/content_based_filtering.cpython-36.pyc
+*.pyc
+*.xml
+*.xml
