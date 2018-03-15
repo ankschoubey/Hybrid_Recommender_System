@@ -1,0 +1,63 @@
+{% extends "ui/index.html" %}{% load helper_tags %}
+    {% block content %}
+<div style="" class="container-fluid" style="padding:20px">
+    <div class="row" style="padding:20px">
+    <div class="col-5">{% load staticfiles %}
+
+                <img class="card-img-top img-rounded" src="{% static detailed_movie.poster %}" alt="{{k.title}}">
+    </div>
+
+    <div class="col-7">
+        <div class="card text-center">
+  <div class="card-header">
+      <h2>{{detailed_movie.title}}</h2>
+  </div>
+  <div class="card-body">
+    <h5 class="card-title"></h5>
+        <img class="card-img-top img-rounded" src="{% static detailed_movie.backdrop %}" alt="{{k.title}}">
+    <p class="card-text">      <p>{{detailed_movie.overview}}</p></p>
+
+
+        <strong>Original language</strong>: {{detailed_movie.original_language}}
+    </h5>
+  </div>
+  <div class="card-footer text-muted">
+      <strong>Rate this movie</strong>:{% include 'ui/ratings_template.html' with movieid=detailed_movie.id %}
+  </div>
+</div>
+        </div>
+
+        <h1>Similar Movies</h1>
+<div class="card-columns" style="column-count: 5">
+            {% for j in similar_movies%}
+                {% with k=movies|hash:j %}
+                <div class="col">{% load staticfiles %}
+                <div class="card" style="" id='{{j}}' >
+                <img class="card-img-top" src="{% static k.poster %}" alt="{{k.title}}">
+                <div class="card-body">
+                <a class="card-title" href="http://127.0.0.1:8000/{{j}}/">{{k.title}}</a>
+                <!--<p class="card-text">{{k.overview}}</p>-->
+                    </div>
+                </div>
+                </div>
+                {% endwith %}
+            {% endfor %}
+            </div>
+                <h1>Users who liked this also liked</h1>
+            <div class="card-columns" style="column-count: 5">
+            {% for j in user_who_like%}
+                {% with k=movies|hash:j %}
+                <div class="col">{% load staticfiles %}
+                <div class="card" style="" id='{{j}}' >
+                <img class="card-img-top" src="{% static k.poster %}" alt="{{k.title}}">
+                <div class="card-body">
+                <a class="card-title" href="http://127.0.0.1:8000/{{j}}/">{{k.title}}</a>
+                <!--<p class="card-text">{{k.overview}}</p>-->
+                    </div>
+                </div>
+                </div>
+                {% endwith %}
+            {% endfor %}
+            </div>
+
+    {% endblock %}

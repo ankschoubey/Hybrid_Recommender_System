@@ -1,10 +1,8 @@
-import core
 import generate_defaults
-import json
 import numpy as np
 
-from data import *
-from algorithms import Hybridization, Simple_CollaborativeFiltering, Simple_ContentBasedFiltering, Normalised_ContentBasedFiltering
+from ui.data import *
+from ui.algorithms import Hybridization, Simple_CollaborativeFiltering, Simple_ContentBasedFiltering, Normalised_ContentBasedFiltering
 
 from time import time
 
@@ -85,7 +83,7 @@ cb.fit(ml.load_complete_movie_info())
 fitting = time() - start
 print('Fit time Simple_ContentBasedFiltering = ',fitting)
 cb_recommendation = cb.predict(movies_id)[:ncb_recommendation.shape[0]]
-
+save_exports_to_db(cb.export(), db)
 end =  time()
 total_cb = end - start
 
@@ -107,7 +105,7 @@ print('number of same items ', np.intersect1d(cb_recommendation,ncb_recommendati
 
 cf = Simple_CollaborativeFiltering()
 cf.fit(ml.load_ratings())
-#save_exports_to_db(cf.export(), db)
+save_exports_to_db(cf.export(), db)
 
 print('Collaborative Filtering Recommendation for item:',movie_title)
 cf_item_recommendation = cf.predict(item_id=movies_id)
@@ -136,17 +134,17 @@ Before sending ids to Json_Formatter, limit the number of ids in each category
 
 recommended = {}
 
-recommended['Recommended for you'] = combination.tolist()[:10]
-recommended['Because you liked '+movie_title] =cb_recommendation.tolist()[:10]
-recommended['User who liked '+movie_title+'also liked this']  =cf_user_recommendation.tolist()[:10]
+recommended['Recommended for you'] = combination.tolist()[:1000]
+recommended['Because you liked '+movie_title] =cb_recommendation.tolist()[:1000]
+recommended['User who liked '+movie_title+'also liked this']  =cf_user_recommendation.tolist()[:1000]
 
 formatter = JSON_formatter(db)
 json1 = formatter.format(recommended)
 
-json1.replace('\"','\\\"')
-parsed = json.loads(json1)
+#json1.replace('\"','\\\"')
+#parsed = json.loads(json1)
 
-print(json.dumps(parsed, indent=4, sort_keys=True))
+#print(json.dumps(parsed, indent=4, sort_keys=True))
 
 # Send json to file
 

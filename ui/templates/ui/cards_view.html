@@ -1,0 +1,29 @@
+{% extends "ui/index.html" %}{% load helper_tags %}
+    {% block content %}
+<div style="" class="container-fluid">
+
+        {% for i in content %}
+                <h1>{{i|safe}}</h1>
+
+
+        <div class="card-columns" style="column-count: 4;">
+            {% for j in content|hash:i%}
+                {% with k=movies|hash:j %}
+
+                <div class="col">{% load staticfiles %}
+                <div class="card" style="" id='{{j}}' >
+                <img class="card-img-top" src="{% static k.poster %}" alt="{{k.title}}">
+                <div class="card-body">
+                <a class="card-title" href="{{j}}/">{{k.title}}</a>
+                <!--<p class="card-text">{{k.overview}}</p>-->
+                    </div>
+                </div>
+                </div>
+                {% endwith %}
+            {% endfor %}
+            </div>
+
+
+        {% endfor %}
+</div>
+    {% endblock %}

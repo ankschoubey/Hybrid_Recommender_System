@@ -1,5 +1,5 @@
 import pandas as pd
-import core
+from ui import core
 from scipy import sparse
 import sqlalchemy
 from sqlalchemy.engine.reflection import Inspector
@@ -19,7 +19,7 @@ class Database:
         if len(where):
             where= ' WHERE '+where
         query = 'SELECT ' + ','.join(columns) + ' FROM '+table+where
-        #print(query)
+        print(query)
         try:
             return  pd.read_sql(query, self.engine1)
         except sqlalchemy.exc.OperationalError:
@@ -35,8 +35,10 @@ class Database:
         except:
             frame.to_sql(table_name, self.engine2, if_exists=already_exists)
 
-        if already_exists == 'replace':
+        try:
             self.set_primary_key_for_django(table_name)
+        except:
+            pass
 
     def set_primary_key_for_django(self, table_name):
         sql = """ALTER TABLE `"""+table_name+ """` 
@@ -172,8 +174,11 @@ class Movielens:
                       'Fantasy', 'Film_Noir', 'Horror', 'Musical', 'Mystery', 'Romance', 'Sci_Fi', 'Thriller', 'War',
                       'Western', 'unknown']
 
-    def __init__(self, database):
-        self.db = database
+    def __init__(self, database=None):
+        if database is None:
+            self.db = Database()
+        else:
+            self.db = database
 
     def load_ratings(self):
         df = self.db.get(table = 'ratings', columns = ['userId', 'movieID', 'rating'])
@@ -189,6 +194,16 @@ class Movielens:
         id = str(id)
         df = self.db.get(table = 'movies', columns = self.movie_categories, where='movieId IN ('+ id +')')
         return df.columns[(df != 0).all()].tolist()
+
+    def get_movie_categories(self,id):
+        types = self.get_movie_type(id)
+
+        text_types = []
+        for i in len(types):
+            if i == 1:
+                text_types.append(self.movie_categories[i])
+        return text_types
+
 
     def load_complete_movie_info(self):
         df = self.db.get(table = 'movies', columns = self.movie_categories)
@@ -207,7 +222,7 @@ def save_exports_to_db(data, db):
 
 class TheMovieDB:
     image_path = 'https://image.tmdb.org/t/p/w500'
-
+    required_columns = ['title','original_language','overview','poster_path','backdrop_path','video','production_countries']
     def __init__(self,API_Key=None):
         if API_Key:
             self.API_Key = API_Key
@@ -235,23 +250,32 @@ class TheMovieDB:
         movie = json.loads(a.content)['movie_results'][0]
 
         info = {}
+        for i in self.required_columns:
+            info[i] = ''
         info['title'] = movie['title']
-        info['tagline'] = movie['tagline']
         info['original_language']= movie['original_language']
         info['overview'] = movie['overview']
         if movie['poster_path']:
             info['poster'] = self.image_path + movie['poster_path']
+            info['poster_path'] = movie['poster_path']
         if movie['backdrop_path']:
             info['backdrop'] = self.image_path + movie['backdrop_path']
+            info['backdrop_path'] = movie['backdrop_path']
         info['video'] = movie['video']
-        info['production_countries'] = movie['production_countries']['name']
+        if info['production_countries']:
+            info['production_countries'] = movie['production_countries'][0]['iso_3166_1']
 
         return info
 
 
 class JSON_formatter:
-    def __init__(self,database):
+
+    all_columns = ['title','original_language','overview','poster','backdrop','video','production_countries']
+
+    def __init__(self,database = None):
         self.db = database
+        if self.db is None:
+            self.db = Database()
         self.movie_db = TheMovieDB(core.json_read('defaults.json')['moviedb_api_key'])
 
     def get_movie_imdb_id(self, ids):
@@ -274,27 +298,30 @@ class JSON_formatter:
 
     def get_from_db(self,id):
         try:
-            return self.db.get('movie_info', columns =['movieId','title','overview','backdrop', 'poster', 'video'], where ='movieId = '+str(id))
+            return self.db.get('movie_info', columns = self.all_columns, where ='movieId = '+str(id))
         except:
             self.get_from_api([id])
-            return self.db.get('movie_info', columns=['movieId', 'title', 'overview', 'backdrop', 'poster', 'video'],
+            return self.db.get('movie_info', columns= self.all_columns,
                    where='movieId = ' + str(id))
 
     def get_from_api(self,ids):
         df = self.get_movie_imdb_id(ids)
         for index, i in df.iterrows():
-            data = self.movie_db.movie(id=i['imdbId'])
+            try:
+                data = self.movie_db.movie(id=i['imdbId'])
+            except:
+                continue
             data['movieId'] = str(ids[index])
             poster_file_location = 'movie_images/poster/' + data['movieId'] + '.png'
             if data.get('poster',False):
                 print('Downloading poster for ',ids[index])
-                self.save_image(data['poster'], poster_file_location)
+                self.save_image(data['poster'], 'ui/static/'+ poster_file_location)
                 data['poster'] = poster_file_location
 
             backdrop_file_location = 'movie_images/backdrop/' + data['movieId'] + '.png'
             if data.get('backdrop',False):
                 print('Downloading backdrop for ',ids[index])
-                self.save_image(data['backdrop'], backdrop_file_location)
+                self.save_image(data['backdrop'], 'ui/static/'+backdrop_file_location)
                 data['backdrop'] = backdrop_file_location
 
             # updating old record because csv was shitty
@@ -320,8 +347,16 @@ class JSON_formatter:
                 data = self.get_from_db(movie_ids[index])
 
             temp = {}
+
             for key, value in data.to_dict().items():
-                temp[key]= value[0]
+                try:
+                    temp[key]= value[0]
+                    #print('key', index)
+
+                    #TODO#
+                    #temp[key]['categories'] = Movielens().get_movie_categories(index)
+                except:
+                    raise Exception('Internet not connected')
             final_dict[movie_ids[index]] =temp
 
         return final_dict
@@ -342,8 +377,9 @@ class JSON_formatter:
         movies_formatted = self.get_movies_formatted(all_movies)
         # for i in movies_formatted:
         #     print(i)
-
-        dict['movies'] = movies_formatted
+        response = {}
+        response['content'] = dict
+        response['movies'] = movies_formatted
         #print(dict.keys())
 
-        return json.dumps(dict)
+        return response

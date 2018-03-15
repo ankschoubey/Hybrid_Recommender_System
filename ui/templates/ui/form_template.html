@@ -1,0 +1,7 @@
+{% for field in form %}
+    <fieldset class="form-group">
+        <p>{{field.error}}</p>
+        <label>{{field.label_tag}}</label>
+        {{field}}
+    </fieldset>
+{% endfor %}

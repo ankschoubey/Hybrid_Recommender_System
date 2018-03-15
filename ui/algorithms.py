@@ -1,4 +1,4 @@
-import core
+from ui import core
 import pandas as pd
 from tqdm import trange
 import numpy as np

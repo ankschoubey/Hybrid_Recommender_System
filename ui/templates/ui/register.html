@@ -1,0 +1,14 @@
+{% extends "ui/index.html" %}
+    {% block content %}
+        <div style="padding:20px">
+        <h1>Register</h1>
+        <form action='' method='post' enctype="multipart/form-data">
+            {% csrf_token %}
+            {% include 'ui/form_template.html' %}
+
+            <button type='submit' class="btn btn-lg btn-primary btn-block">Register</button>
+        </form>
+            <a class="btn btn-lg btn-secondary btn-block" href="login" style="margin-top:20px">Go to Login Page</a>
+
+        </div>
+    {% endblock %}
