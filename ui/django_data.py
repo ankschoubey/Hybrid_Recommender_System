@@ -92,6 +92,7 @@ class DataFetcher:
 
             return movies_list
 
+    #def
 
         return []
     def normalised_data_fetch(movieid, limit = 10):

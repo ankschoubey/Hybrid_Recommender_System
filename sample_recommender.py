@@ -59,87 +59,93 @@ read up algorithms.py file to know parameters and output for each class.
 
 """0. Popularity Based Filtering"""
 start = time()
-nb = PopularityBasedFiltering()
-nb.fit(ml.load_ratings())
-print('prediction is',nb.predict([0,1,3,4,5,1032]))
+pb = PopularityBasedFiltering()
+pb.fit(ml.load_ratings())
+#print('prediction is',pb.predict([0,1,3,4,5,1032]))
+
+#print('prediction is',pb.predict([0,1,3,4,5,1032]))
+export = pb.export(custom_field={'action':[1,2,3]})
+print(export)
 fitting = time() - start
+save_exports_to_db(export,db)
+#exit()
 #
 print('Fit time Popularity Based Filtering = ',fitting)
 
-# """ 1. Normalised_ContentBasedFiltering: """
-#
-# start = time()
-# nb = Normalised_ContentBasedFiltering()
-# nb.fit(ml.load_complete_movie_info())
-# fitting = time() - start
-#
-# print('Fit time Normalised_ContentBasedFiltering = ',fitting)
-# ncb_recommendation = nb.predict(movies_id)
-#
-# #print(nb.export())
-#
-# save_exports_to_db(nb.export(), db)
-#
-# end =  time()
-# total_ncb = end - start
-#
-# # print(ncb_recommendation)
-#
-# start = time()
-# cb = Simple_ContentBasedFiltering()
-# cb.fit(ml.load_complete_movie_info())
-# fitting = time() - start
-# print('Fit time Simple_ContentBasedFiltering = ',fitting)
-# cb_recommendation = cb.predict(movies_id)[:ncb_recommendation.shape[0]]
-# save_exports_to_db(cb.export(), db)
-# end =  time()
-# total_cb = end - start
-#
-# """
-# Both Content Based Filtering Algorithm will product same results
-# The time taken for Normalised is slow if their is no need to create similarity matrix.
-# """
-#
-#
-# print('number of items in simple cb ', cb_recommendation.shape,  'time taken',total_cb)
-# print('number of items in normalised cb ', ncb_recommendation.shape, 'time taken',total_ncb)
-# print('number of same items ', np.intersect1d(cb_recommendation,ncb_recommendation).shape)
-#
-#
-# """ Collaborative Filtering: """
-#
-# """ 1. Simple_CollaborativeFiltering : """
-#
-#
-# cf = Simple_CollaborativeFiltering()
-# cf.fit(ml.load_ratings())
-# save_exports_to_db(cf.export(), db)
-#
-# print('Collaborative Filtering Recommendation for item:',movie_title)
-# cf_item_recommendation = cf.predict(item_id=movies_id)
-# print(cf_item_recommendation)
-#
-# cf_user_recommendation = cf.predict_for_user(user_id = user_id)
-# print('Collaborative Filtering Recommendation for user:', user_id)
-# print(cf_user_recommendation)
-#
-#
-# """ Hybridization: """
-#
-# # Hybridization
-# print('Mixed Hybridization')
-#
-# combination = Hybridization.mixed([cb_recommendation,cf_item_recommendation,cf_user_recommendation])
-# print(combination, type(combination))
-#
-# """
-# Json Formating:
-#
-# Not to be used when Django is implemented
-#
-# Before sending ids to Json_Formatter, limit the number of ids in each category
-# """
-#
+""" 1. Normalised_ContentBasedFiltering: """
+
+start = time()
+nb = Normalised_ContentBasedFiltering()
+nb.fit(ml.load_complete_movie_info())
+fitting = time() - start
+
+print('Fit time Normalised_ContentBasedFiltering = ',fitting)
+ncb_recommendation = nb.predict(movies_id)
+
+print(nb.export())
+
+save_exports_to_db(nb.export(), db)
+
+end =  time()
+total_ncb = end - start
+
+# print(ncb_recommendation)
+
+start = time()
+cb = Simple_ContentBasedFiltering()
+cb.fit(ml.load_complete_movie_info())
+fitting = time() - start
+print('Fit time Simple_ContentBasedFiltering = ',fitting)
+cb_recommendation = cb.predict(movies_id)[:ncb_recommendation.shape[0]]
+save_exports_to_db(cb.export(), db)
+end =  time()
+total_cb = end - start
+
+"""
+Both Content Based Filtering Algorithm will product same results
+The time taken for Normalised is slow if their is no need to create similarity matrix.
+"""
+
+
+print('number of items in simple cb ', cb_recommendation.shape,  'time taken',total_cb)
+print('number of items in normalised cb ', ncb_recommendation.shape, 'time taken',total_ncb)
+print('number of same items ', np.intersect1d(cb_recommendation,ncb_recommendation).shape)
+
+
+""" Collaborative Filtering: """
+
+""" 1. Simple_CollaborativeFiltering : """
+
+
+cf = Simple_CollaborativeFiltering()
+cf.fit(ml.load_ratings())
+save_exports_to_db(cf.export(), db)
+
+print('Collaborative Filtering Recommendation for item:',movie_title)
+cf_item_recommendation = cf.predict(item_id=movies_id)
+print(cf_item_recommendation)
+
+cf_user_recommendation = cf.predict_for_user(user_id = user_id)
+print('Collaborative Filtering Recommendation for user:', user_id)
+print(cf_user_recommendation)
+
+
+""" Hybridization: """
+
+# Hybridization
+print('Mixed Hybridization')
+
+combination = Hybridization.mixed([cb_recommendation,cf_item_recommendation,cf_user_recommendation])
+print(combination, type(combination))
+
+"""
+Json Formating:
+
+Not to be used when Django is implemented
+
+Before sending ids to Json_Formatter, limit the number of ids in each category
+"""
+
 # recommended = {}
 #
 # recommended['Recommended for you'] = combination.tolist()[:1000]

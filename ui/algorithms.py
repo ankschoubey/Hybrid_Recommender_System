@@ -21,21 +21,25 @@ class PopularityBasedFiltering:
 
     def fit(self, ratings):
         self.summation = ratings.sum(axis=0)
-        print(self.summation)
+        #print(self.summation)
 
 
         self.summation = np.array(self.summation)[0]
-        print(self.summation)
+        #print(self.summation)
+
+        self.overall_popularity = core.reverse_argsort(self.summation)
 
         self.summation = pd.Series(data=self.summation)
-        print(self.summation)
+        #print(self.summation)
 
     def predict(self,ids = None, limit=10):
 
         if ids is None:
             #selected_ids = self.summation
-            return core.reverse_argsort(self.summation)[:limit]
-
+            #print('print',core.reverse_argsort(self.summation.iloc[0].values)[:limit])
+            print(self.overall_popularity[:limit])
+            return self.overall_popularity[:limit]
+        #exit()
         selected_ids = self.summation[ids]
         #print(selected_ids)
 
@@ -56,8 +60,35 @@ class PopularityBasedFiltering:
                 break
         return result
 
+    def export(self,custom_field=None,limit_columns=10):
+        data = {}
+        name = self.__class__.__name__
 
-    
+        df = pd.DataFrame(self.predict(limit=limit_columns))#)#, index=['overall_popular'])
+        print(df)
+        df = df.transpose()
+
+        categories = ['overall']
+
+        if custom_field != None:
+            for key, value in custom_field.items():
+                predicted = self.predict(value)
+
+                while len(predicted)<limit_columns:
+                    predicted.append(-1)
+
+                df_temp = pd.DataFrame(predicted)#, index=key)
+                df_temp = df_temp.transpose()
+                print(df_temp)
+                df = df.append(df_temp)
+                categories.append(key)
+        df['categories']= categories
+        #df.index.values = [i for i in range(len(df.index.values))]
+        data[name] = df
+        return data
+
+
+
 
 class Simple_CollaborativeFiltering:
 
