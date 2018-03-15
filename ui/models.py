@@ -65,6 +65,25 @@ class NormalisedContentbasedfilteringSimilarity(models.Model):
         db_table = 'Normalised_ContentBasedFiltering_similarity'
 
 
+class Popularitybasedfiltering(models.Model):
+    index = models.BigIntegerField(blank=True, null=True)
+    number_0 = models.BigIntegerField(db_column='0', blank=True, null=True)  # Field renamed because it wasn't a valid Python identifier.
+    number_1 = models.BigIntegerField(db_column='1', blank=True, null=True)  # Field renamed because it wasn't a valid Python identifier.
+    number_2 = models.BigIntegerField(db_column='2', blank=True, null=True)  # Field renamed because it wasn't a valid Python identifier.
+    number_3 = models.BigIntegerField(db_column='3', blank=True, null=True)  # Field renamed because it wasn't a valid Python identifier.
+    number_4 = models.BigIntegerField(db_column='4', blank=True, null=True)  # Field renamed because it wasn't a valid Python identifier.
+    number_5 = models.BigIntegerField(db_column='5', blank=True, null=True)  # Field renamed because it wasn't a valid Python identifier.
+    number_6 = models.BigIntegerField(db_column='6', blank=True, null=True)  # Field renamed because it wasn't a valid Python identifier.
+    number_7 = models.BigIntegerField(db_column='7', blank=True, null=True)  # Field renamed because it wasn't a valid Python identifier.
+    number_8 = models.BigIntegerField(db_column='8', blank=True, null=True)  # Field renamed because it wasn't a valid Python identifier.
+    number_9 = models.BigIntegerField(db_column='9', blank=True, null=True)  # Field renamed because it wasn't a valid Python identifier.
+    categories = models.TextField(blank=True, null=True)
+
+    class Meta:
+        managed = True
+        db_table = 'PopularityBasedFiltering'
+
+
 class SimpleCollaborativefilteringItemRecommendation(models.Model):
     index = models.BigIntegerField(blank=True, null=True)
     number_0 = models.BigIntegerField(db_column='0', blank=True, null=True)  # Field renamed because it wasn't a valid Python identifier.
@@ -138,8 +157,6 @@ class SimpleContentbasedfiltering(models.Model):
     class Meta:
         managed = True
         db_table = 'Simple_ContentBasedFiltering'
-
-
 
 
 class Links(models.Model):

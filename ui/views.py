@@ -41,13 +41,44 @@ class Index(View):
     template_name = 'ui/cards_view.html'
 
     def get(self, request):
-
+        user_id = 2
+        minimum_rating = 3
         content = {}
+        movie_id_latest_movie = None
+        movie_id_second_movie = None
         #insert_update_rating(9123312,1,5,7)
         #delete_rating(9123312,123412)
-        content['People who watched <h2>'+ fetcher.movie_title(movie_id=0) + '</h2> also watched this:'] = fetcher.fetch_SimpleCollaborativefiltering(movieid=1)
-        content['Recommended for you'] = fetcher.fetch_SimpleCollaborativefiltering(userid=3)
-        content['Based on ' + fetcher.movie_title(movie_id=0)] = fetcher.fetch_SimpleContentbasedfiltering(movieid=0)
+
+        try:
+            content['Recommended for you'] = fetcher.fetch_SimpleCollaborativefiltering(userid=user_id)
+        except:
+            pass
+        content['Most Popular Movies'] = fetcher.fetch_Popularitybasedfiltering()
+
+
+        try:
+            movies = list(Ratings.objects.filter(userid = user_id, rating__gte=minimum_rating).order_by('-timestamp').values('movieid'))
+            movie_id_latest_movie = movies[0]['movieid']
+            movie_id_second_movie = movies[1]['movieid']
+            print('movie_id_latest_movie',movie_id_latest_movie)
+            print('name ', fetcher.movie_title(movie_id=movie_id_latest_movie))
+            content['People who watched <h2>' + fetcher.movie_title(
+                movie_id=movie_id_latest_movie) + '</h2> also watched this:'] = fetcher.fetch_SimpleCollaborativefiltering(movieid=1)
+        except Exception as e:
+            print(e)
+
+            pass
+
+        try:
+            #print('movie_id_second_movie',movie_id_second_movie)
+            #print('contentbased',fetcher.fetch_SimpleContentbasedfiltering(
+            #    movieid=movie_id_second_movie))
+            #print('moviename ',fetcher.movie_title(movie_id=movie_id_second_movie))
+            content['Based on ' + fetcher.movie_title(movie_id=movie_id_second_movie)] = fetcher.fetch_SimpleContentbasedfiltering(
+                movieid=movie_id_second_movie)
+        except:
+            pass
+
         #content['Most Popular']=popularity()
 
         #return HttpResponse(str(content)+'123')

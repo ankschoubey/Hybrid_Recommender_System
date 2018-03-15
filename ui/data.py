@@ -357,7 +357,7 @@ class JSON_formatter:
                 #temp[key]
                 #print(Movielens(None).get_movie_type(index))
             temp['categories'] = Movielens().get_movie_type(movie_ids[index])
-            print('temp',temp)
+            #print('temp',temp)
             final_dict[movie_ids[index]] =temp
 
         return final_dict

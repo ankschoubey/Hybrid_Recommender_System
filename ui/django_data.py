@@ -2,7 +2,7 @@ from .models import Ratings
 from django.db.models import Sum
 from django.db.models import Avg
 from django.db.models import Count
-from .models import NormalisedContentbasedfilteringMap, NormalisedContentbasedfilteringSimilarity, SimpleCollaborativefilteringItemRecommendation, SimpleCollaborativefilteringUserRecommendation, SimpleContentbasedfiltering
+from .models import NormalisedContentbasedfilteringMap, NormalisedContentbasedfilteringSimilarity, SimpleCollaborativefilteringItemRecommendation, SimpleCollaborativefilteringUserRecommendation, SimpleContentbasedfiltering, Popularitybasedfiltering
 from .data import JSON_formatter, Movielens
 
 formatter = JSON_formatter()
@@ -69,19 +69,21 @@ class DataFetcher:
         return movies_list
 
     def fetch_SimpleCollaborativefiltering(self, movieid = None, userid=None):
+        #print('userid', userid)
 
-        if userid:
+        if userid is not None:
 
             info =  list(SimpleCollaborativefilteringUserRecommendation.objects.filter(userid=userid).values())[0]
+            #print('info is', info)
             movies_list = []
             for i in numeric_values:
                 try:
                     movies_list.append(info[i])
                 except:
                     pass
-
+            #print('collaborative',movies_list)
             return movies_list
-        if movieid:
+        if movieid is not None:
             info =  list(SimpleCollaborativefilteringItemRecommendation.objects.filter(movieid=movieid).values())[0]
             movies_list = []
             for i in numeric_values:
@@ -92,9 +94,17 @@ class DataFetcher:
 
             return movies_list
 
-    #def
+    def fetch_Popularitybasedfiltering(self):
+        info = list(Popularitybasedfiltering.objects.filter(categories='overall').values())[0]
+        movies_list = []
+        for i in numeric_values:
+            try:
+                movies_list.append(info[i])
+            except:
+                pass
 
-        return []
+        return movies_list
+
     def normalised_data_fetch(movieid, limit = 10):
         movie_type = list(NormalisedContentbasedfilteringMap.objects.filter(movieid=movieid).values('normalised_key').values())[0]['normalised_key']
         #return list(NormalisedContentbasedfilteringSimilarity.objects.filter(movieid=movie_type).values())
