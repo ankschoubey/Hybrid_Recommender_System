@@ -18,7 +18,8 @@
     <p class="card-text">      <p>{{detailed_movie.overview}}</p></p>
 
 
-        <strong>Original language</strong>: {{detailed_movie.original_language}}
+        <p><strong>Original language</strong>: {{detailed_movie.original_language}}</p>
+      <p><strong>Movie Categories</strong>:{{detailed_movie.categories}}</p>
     </h5>
   </div>
   <div class="card-footer text-muted">
@@ -36,6 +37,7 @@
                 <img class="card-img-top" src="{% static k.poster %}" alt="{{k.title}}">
                 <div class="card-body">
                 <a class="card-title" href="http://127.0.0.1:8000/{{j}}/">{{k.title}}</a>
+
                 <!--<p class="card-text">{{k.overview}}</p>-->
                     </div>
                 </div>

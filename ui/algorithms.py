@@ -17,6 +17,48 @@ class Hybridization:
     def hybridize(self,lists):
         return self.mixed(lists)
 
+class PopularityBasedFiltering:
+
+    def fit(self, ratings):
+        self.summation = ratings.sum(axis=0)
+        print(self.summation)
+
+
+        self.summation = np.array(self.summation)[0]
+        print(self.summation)
+
+        self.summation = pd.Series(data=self.summation)
+        print(self.summation)
+
+    def predict(self,ids = None, limit=10):
+
+        if ids is None:
+            #selected_ids = self.summation
+            return core.reverse_argsort(self.summation)[:limit]
+
+        selected_ids = self.summation[ids]
+        #print(selected_ids)
+
+        #print(selected_ids)
+        #print(self.summation.shape[1])
+        #not_in_indices = [x for x in range(self.summation.shape[1]) if x not in ids]
+        #print(not_in_indices)
+        #selected_ids[0, not_in_indices] = 0
+        #print(selected_ids)
+
+        indexes = selected_ids.index.values
+        #print('index',indexes)
+
+        result = []
+        for i in core.reverse_argsort(selected_ids):
+            result.append(indexes[i])
+            if len(result)>limit:
+                break
+        return result
+
+
+    
+
 class Simple_CollaborativeFiltering:
 
     def fit(self, ratings):

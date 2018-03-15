@@ -19,7 +19,7 @@ class Database:
         if len(where):
             where= ' WHERE '+where
         query = 'SELECT ' + ','.join(columns) + ' FROM '+table+where
-        print(query)
+        #print(query)
         try:
             return  pd.read_sql(query, self.engine1)
         except sqlalchemy.exc.OperationalError:
@@ -195,14 +195,14 @@ class Movielens:
         df = self.db.get(table = 'movies', columns = self.movie_categories, where='movieId IN ('+ id +')')
         return df.columns[(df != 0).all()].tolist()
 
-    def get_movie_categories(self,id):
-        types = self.get_movie_type(id)
-
-        text_types = []
-        for i in len(types):
-            if i == 1:
-                text_types.append(self.movie_categories[i])
-        return text_types
+    # def get_movie_categories(self,id):
+    #     types = list(self.get_movie_type(id))
+    #     print('movie type is', list(types))
+    #     text_types = []
+    #     for i in len(types):
+    #         if types[i] == 1:
+    #             text_types.append(self.movie_categories[i])
+    #     return text_types
 
 
     def load_complete_movie_info(self):
@@ -349,14 +349,15 @@ class JSON_formatter:
             temp = {}
 
             for key, value in data.to_dict().items():
-                try:
-                    temp[key]= value[0]
-                    #print('key', index)
+                temp[key]= value[0]
+                print('key', index)
+                print('value = ',value[0])
 
-                    #TODO#
-                    #temp[key]['categories'] = Movielens().get_movie_categories(index)
-                except:
-                    raise Exception('Internet not connected')
+                #TODO#
+                #temp[key]
+                #print(Movielens(None).get_movie_type(index))
+            temp['categories'] = Movielens().get_movie_type(movie_ids[index])
+            print('temp',temp)
             final_dict[movie_ids[index]] =temp
 
         return final_dict
