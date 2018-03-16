@@ -15,6 +15,13 @@ def random_order(a):
     random.shuffle(a, random.random)
     return a
 
+def get_column(matrix, column_no):
+    data = []
+    for i in matrix:
+        data.append(i[column_no])
+
+    return data
+
 def delete_rating(userid, movieid):
     Ratings.objects.filter(userid=userid, movieid=movieid).delete()
 

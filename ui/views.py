@@ -11,7 +11,7 @@ from django.contrib.auth import authenticate, login
 from django.shortcuts import render, redirect
 from .data import JSON_formatter
 from .core import current_seconds
-from .django_data import insert_update_rating, delete_rating
+from .django_data import insert_update_rating, delete_rating, get_column
 
 
 from django.http import HttpResponse
@@ -42,7 +42,7 @@ class Index(View):
     template_name = 'ui/cards_view.html'
 
     def get(self, request):
-        user_id = 2
+        user_id = 1
         minimum_rating = 3
         content = {}
         meta = {}
@@ -239,3 +239,31 @@ class Search(generic.ListView):
         else:
             object_list = self.model.objects.all()
         return object_list
+
+class ProfileView(generic.View):
+    template_name = 'ui/profile.html'
+    model = Ratings
+
+    def get(self, request):
+        user_id = 1
+        data = {}
+
+        all_info =  list(Ratings.objects.filter(userid=user_id).order_by('-timestamp').values_list('movieid', 'rating'))
+        #movie_ids = get_column(all_info,0)
+
+        content = []
+        for i, j in all_info:
+            temp = {'movieid': i}
+            object_list = list(Movies.objects.filter(movieid=i).values())[0]
+            temp['title']=object_list['title']
+            temp['year']=object_list['year']
+            temp['rating']=j
+            content.append(temp)
+
+       # data['movies'] = JSON_formatter().format({'rated_movies':movie_ids})['movies']
+
+        #return HttpResponse(str(content))
+
+        data['user_history'] = content
+
+        return render(request, self.template_name,data)

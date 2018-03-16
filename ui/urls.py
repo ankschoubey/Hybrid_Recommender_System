@@ -10,4 +10,5 @@ urlpatterns = [
     url(r'^(?P<pk>[0-9]+)/$', views.MovieView.as_view()),
     url(r'update_rating', views.ajax_update_rating),
     url(r'search', views.Search.as_view()),
+    url(r'profile', views.ProfileView.as_view())
 ]

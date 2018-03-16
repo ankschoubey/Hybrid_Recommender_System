@@ -1,0 +1,40 @@
+{% extends "ui/index.html" %}{% load helper_tags %}
+
+{% block content %}
+
+
+{% if user_history|length > 0%}
+<div class="container" style="padding:10px">
+    <h1>History of Movies Rated by You</h1>
+
+    <h5>{{user_history|length}} movies rated</h5>
+<div class="table-responsive">
+      <table class="table table-bordered table-hover">
+          <thead class="thead-dark ">
+            <tr>
+                <th>Movie Id</th>
+              <th>Title</th>
+              <th>Rating</th>
+              <th>Year</th>
+            </tr>
+          </thead>
+          <tbody>
+
+        {% for i in user_history %}
+            <tr>
+              <td><a href="{{i.movieid}}">{{i.movieid}}</a></td>
+              <td><a href="{{i.movieid}}">{{i.title}}</a></td>
+              <td>{{i.rating}}</td>
+              <td>{{i.year}}</td>
+            </tr>
+        {% endfor %}
+
+          </tbody>
+      </table>
+        </div>
+    </div>
+{% else %}
+<p>Error</p>
+{% endif %}
+
+{% endblock %}
