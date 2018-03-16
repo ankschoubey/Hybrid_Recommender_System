@@ -2,10 +2,13 @@
 {% block content %}
 
 {% if object_list|length > 0%}
-
+<div class="container" style="padding:10px">
+    <h2>Search Results for: <strong>{{search_term}}</strong></h2>
+    <h5>{{object_list|length}} movies found</h5>
 <div class="table-responsive">
-      <table class="table">
-          <thead>
+      <table class="table table-bordered table-hover">
+
+          <thead class="thead-dark ">
             <tr>
                 <th>Movie Id</th>
               <th>Title</th>
@@ -28,6 +31,7 @@
           </tbody>
       </table>
         </div>
+    </div>
 {% else %}
 <p>Error</p>
 {% endif %}

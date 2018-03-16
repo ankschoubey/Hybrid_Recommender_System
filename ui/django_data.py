@@ -9,6 +9,11 @@ formatter = JSON_formatter()
 movie_lens = Movielens()
 numeric_values = [ 'number_0', 'number_1', 'number_2', 'number_3', 'number_4', 'number_5', 'number_6', 'number_7', 'number_8', 'number_9']
 
+import random
+
+def random_order(a):
+    random.shuffle(a, random.random)
+    return a
 
 def delete_rating(userid, movieid):
     Ratings.objects.filter(userid=userid, movieid=movieid).delete()
@@ -66,7 +71,7 @@ class DataFetcher:
             except:
                 pass
 
-        return movies_list
+        return random_order(movies_list)
 
     def fetch_SimpleCollaborativefiltering(self, movieid = None, userid=None):
         #print('userid', userid)
@@ -82,7 +87,7 @@ class DataFetcher:
                 except:
                     pass
             #print('collaborative',movies_list)
-            return movies_list
+            return random_order(movies_list)
         if movieid is not None:
             info =  list(SimpleCollaborativefilteringItemRecommendation.objects.filter(movieid=movieid).values())[0]
             movies_list = []
@@ -92,7 +97,7 @@ class DataFetcher:
                 except:
                     pass
 
-            return movies_list
+            return random_order(movies_list)
 
     def fetch_Popularitybasedfiltering(self):
         info = list(Popularitybasedfiltering.objects.filter(categories='overall').values())[0]
@@ -103,7 +108,7 @@ class DataFetcher:
             except:
                 pass
 
-        return movies_list
+        return random_order(movies_list)
 
     def normalised_data_fetch(movieid, limit = 10):
         movie_type = list(NormalisedContentbasedfilteringMap.objects.filter(movieid=movieid).values('normalised_key').values())[0]['normalised_key']
@@ -117,6 +122,6 @@ class DataFetcher:
                 if len(similar_movies)>limit:
                     break
         similar_movies = [int(i['movieid']) for i in similar_movies]
-        return similar_movies
+        return random_order(similar_movies)
 
 #    def fetch_Simple_ContentBasedFiltering(self,id):

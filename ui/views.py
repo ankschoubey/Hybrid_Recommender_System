@@ -108,7 +108,7 @@ class MovieView(View):
         data = engine.format({'Similar Movies':similar_movies,'Users who liked this also liked':user_who_like_this_also_liked})
         response['similar_movies'] = similar_movies
         response['user_who_like'] = user_who_like_this_also_liked
-
+        response['content'] = {'Similar Movies': similar_movies,'User who watched this also watched': user_who_like_this_also_liked}
         response['movies'] = data['movies']
         return render(request, self.template_name, response)
         #return HttpResponse(str(response))
@@ -211,9 +211,9 @@ class Search(generic.ListView):
     # default is object_list
 
     def post(self, request, *args, **kwargs):
-        stuff = request.POST.get('search_term')
-        stuff = self.get_queryset().filter(title__icontains=stuff)
-        return render(request, self.template_name, {'object_list': stuff})
+        search_term = request.POST.get('search_term')
+        stuff = self.get_queryset().filter(title__icontains=search_term)
+        return render(request, self.template_name, {'object_list': stuff, 'search_term': search_term})
 
     def get_queryset(self):
 

@@ -1,5 +1,5 @@
-{% extends "ui/index.html" %}{% load helper_tags %}
-    {% block content %}
+{% load helper_tags %}
+{% block content %}
 
 {% for i in content %}{% load staticfiles %}
 
@@ -9,8 +9,7 @@
     <h5>Stacks vertically on mobile screens</h5>
     <div class="scroll row flex-row flex-sm-nowrap pt-3" style="overflow-x:scroll;">
         {% for j in content|hash:i%}
-
-        {% with k=movies|hash:j %}
+        {% with k=movies_1|hash:j %}
         <div class="col-sm-3 col-md-2">
             <div class="card card-block card-primary bg-primary card-inverse" style="">
                 <img class="card-img-top" src="{% static k.poster %}" alt="{{k.title}}">
