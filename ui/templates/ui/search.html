@@ -1,12 +1,34 @@
 {% extends "ui/index.html" %}{% load helper_tags %}
 {% block content %}
-<ul>
-    {% if object_list is defined %}
+
+{% if object_list|length > 0%}
+
+<div class="table-responsive">
+      <table class="table">
+          <thead>
+            <tr>
+                <th>Movie Id</th>
+              <th>Title</th>
+              <th>Years</th>
+              <th>Categories</th>
+            </tr>
+          </thead>
+          <tbody>
+
         {% for i in object_list %}
-            <li><a href="{{i.movieid}}">{{i.title}}</a> {{i.year}}</li>
+            <tr>
+              <td><a href="{{i.movieid}}">{{i.movieid}}</a></td>
+              <td><a href="{{i.movieid}}">{{i.title}}</a></td>
+              <td>{{i.year}}</td>
+              <td>{{i.year}}</td>
+
+            </tr>
         {% endfor %}
-    {% else %}
-        <p>Results not found</p>
-    {% endif%}
-</ul>
+
+          </tbody>
+      </table>
+        </div>
+{% else %}
+<p>Error</p>
+{% endif %}
 {% endblock %}

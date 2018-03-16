@@ -63,8 +63,8 @@ class Index(View):
             movie_id_second_movie = movies[1]['movieid']
             print('movie_id_latest_movie',movie_id_latest_movie)
             print('name ', fetcher.movie_title(movie_id=movie_id_latest_movie))
-            content['People who watched <h2>' + fetcher.movie_title(
-                movie_id=movie_id_latest_movie) + '</h2> also watched this:'] = fetcher.fetch_SimpleCollaborativefiltering(movieid=1)
+            content['People who watched ' + fetcher.movie_title(
+                movie_id=movie_id_latest_movie) + ' also watched this:'] = fetcher.fetch_SimpleCollaborativefiltering(movieid=1)
         except Exception as e:
             print(e)
 

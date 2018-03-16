@@ -1,29 +1,30 @@
 {% extends "ui/index.html" %}{% load helper_tags %}
     {% block content %}
-<div style="" class="container-fluid">
 
-        {% for i in content %}
-                <h1>{{i|safe}}</h1>
+{% for i in content %}{% load staticfiles %}
 
 
-        <div class="card-columns" style="column-count: 4;">
-            {% for j in content|hash:i%}
-                {% with k=movies|hash:j %}
+<div class="container-fluid pt-3">
+    <h3>{{i}}</h3>
+    <h5>Stacks vertically on mobile screens</h5>
+    <div class="scroll row flex-row flex-sm-nowrap pt-3" style="overflow-x:scroll;">
+        {% for j in content|hash:i%}
 
-                <div class="col">{% load staticfiles %}
-                <div class="card" style="" id='{{j}}' >
+        {% with k=movies|hash:j %}
+        <div class="col-sm-3 col-md-2">
+            <div class="card card-block card-primary card-inverse" style="">
                 <img class="card-img-top" src="{% static k.poster %}" alt="{{k.title}}">
                 <div class="card-body">
-                <a class="card-title" href="{{j}}/">{{k.title}}</a>
-                <!--<p class="card-text">{{k.overview}}</p>-->
-                    </div>
+                    <a class="card-title" href="{{j}}/">{{k.title}}</a>
                 </div>
-                </div>
-                {% endwith %}
-            {% endfor %}
             </div>
-
-
+        </div>
+        {% endwith %}
         {% endfor %}
+    </div>
 </div>
-    {% endblock %}
+
+{% endfor %}
+
+
+{% endblock %}

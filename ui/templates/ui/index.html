@@ -15,6 +15,7 @@
     {% load staticfiles %}
     <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}" type = "text/css"/>
     <link rel="stylesheet" href="{% static 'css/ratings.css' %}" type = "text/css"/>
+      <link rel="stylesheet" href="{% static 'css/cards_scroll.css' %}" type = "text/css"/>
 
     <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
     <script src="http://v4-alpha.getbootstrap.com/assets/js/ie10-viewport-bug-workaround.js"></script>
@@ -23,13 +24,10 @@
 
   <body>
     {% include 'ui/navbar.html' %}
-    <div class="container">
-
        {% block content %}
 
         {% endblock %}
 
-    </div>
 
     <script src="{% static 'js/bootstrap.min.js' %}"></script>
     <script src="{% static 'js/jquery-3.3.1.min.js' %}"></script>
