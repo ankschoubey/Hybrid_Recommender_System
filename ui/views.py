@@ -20,6 +20,7 @@ engine = JSON_formatter()
 
 fetcher = DataFetcher()
 
+from .models import Movies
 
 
 def ajax_update_rating(request):
@@ -199,3 +200,29 @@ class LoginFormView(View):
                     return redirect('ui:index')
 
         return render(request, self.template_name, {'form': form})
+
+from django.views import generic
+
+class Search(generic.ListView):
+    template_name = 'ui/search.html'
+    model = Movies
+
+    #context_object_name = 'movies'
+    # default is object_list
+
+    def post(self, request, *args, **kwargs):
+        stuff = request.POST.get('search_term')
+        stuff = self.get_queryset().filter(title__icontains=stuff)
+        return render(request, self.template_name, {'object_list': stuff})
+
+    def get_queryset(self):
+
+        try:
+            name = self.kwargs['name']
+        except:
+            name = ''
+        if (name != ''):
+            object_list = self.model.objects.filter(title__icontains = name)
+        else:
+            object_list = self.model.objects.all()
+        return object_list

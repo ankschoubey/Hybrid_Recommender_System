@@ -1,0 +1,12 @@
+{% extends "ui/index.html" %}{% load helper_tags %}
+{% block content %}
+<ul>
+    {% if object_list is defined %}
+        {% for i in object_list %}
+            <li><a href="{{i.movieid}}">{{i.title}}</a> {{i.year}}</li>
+        {% endfor %}
+    {% else %}
+        <p>Results not found</p>
+    {% endif%}
+</ul>
+{% endblock %}
