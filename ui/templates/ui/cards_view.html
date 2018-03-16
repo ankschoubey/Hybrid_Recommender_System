@@ -6,17 +6,22 @@
 
 <div class="container-fluid pt-3">
     <h3>{{i}}</h3>
-    <h5>Stacks vertically on mobile screens</h5>
+    <h5>{{meta|hash:i|hash:'subheading'}}</h5>
     <div class="scroll row flex-row flex-sm-nowrap pt-3" style="overflow-x:scroll;">
         {% for j in content|hash:i%}
 
         {% with k=movies|hash:j %}
         <div class="col-sm-3 col-md-2">
-            <div class="card card-block card-primary bg-primary card-inverse" style="">
-                <img class="card-img-top" src="{% static k.poster %}" alt="{{k.title}}">
-                <div class="card-body">
-                    <a class="card-title" href="{{j}}/" style="color:white; text-decoration:none">{{k.title}}</a>
-                </div>
+            <div class="card card-block card-primary  card-inverse" style="background-color:#1d2124">
+                <a href="{{j}}">
+                <img class="card-img-top" src="{% static k.poster %}"  alt="{{k.title}}">
+                    </a>
+
+                <!--#TODO: Decision of whether to use names or not-->
+
+                <!--<div class="card-body">-->
+                    <!--<a class="card-title" href="{{j}}" style="color:white; text-decoration:none">{{k.title}}</a>-->
+                <!--</div>-->
             </div>
         </div>
         {% endwith %}

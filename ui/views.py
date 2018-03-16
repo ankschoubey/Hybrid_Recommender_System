@@ -45,17 +45,19 @@ class Index(View):
         user_id = 2
         minimum_rating = 3
         content = {}
+        meta = {}
         movie_id_latest_movie = None
         movie_id_second_movie = None
         #insert_update_rating(9123312,1,5,7)
         #delete_rating(9123312,123412)
-
+        meta = {}
         try:
             content['Recommended for you'] = fetcher.fetch_SimpleCollaborativefiltering(userid=user_id)
+            meta['Recommended for you'] = {'subheading': 'User Based Collaborative Filtering'}
         except:
             pass
         content['Most Popular Movies'] = fetcher.fetch_Popularitybasedfiltering()
-
+        meta['Most Popular Movies'] = {'subheading': 'Popularity Based Filtering'}
 
         try:
             movies = list(Ratings.objects.filter(userid = user_id, rating__gte=minimum_rating).order_by('-timestamp').values('movieid'))
@@ -63,8 +65,14 @@ class Index(View):
             movie_id_second_movie = movies[1]['movieid']
             print('movie_id_latest_movie',movie_id_latest_movie)
             print('name ', fetcher.movie_title(movie_id=movie_id_latest_movie))
-            content['People who watched ' + fetcher.movie_title(
-                movie_id=movie_id_latest_movie) + ' also watched this:'] = fetcher.fetch_SimpleCollaborativefiltering(movieid=1)
+
+            key = 'People who watched ' + fetcher.movie_title(
+                movie_id=movie_id_latest_movie) + ' also watched this:'
+
+            content[key] = fetcher.fetch_SimpleCollaborativefiltering(movieid=1)
+
+            meta[key] = {'subheading': 'Item Based Collaborative Filtering'}
+
         except Exception as e:
             print(e)
 
@@ -75,8 +83,12 @@ class Index(View):
             #print('contentbased',fetcher.fetch_SimpleContentbasedfiltering(
             #    movieid=movie_id_second_movie))
             #print('moviename ',fetcher.movie_title(movie_id=movie_id_second_movie))
-            content['Based on ' + fetcher.movie_title(movie_id=movie_id_second_movie)] = fetcher.fetch_SimpleContentbasedfiltering(
+
+            key = 'Based on ' + fetcher.movie_title(movie_id=movie_id_second_movie)
+
+            content[key] = fetcher.fetch_SimpleContentbasedfiltering(
                 movieid=movie_id_second_movie)
+            meta[key] = {'subheading': 'Content Based Filtering'}
         except:
             pass
 
@@ -88,6 +100,7 @@ class Index(View):
 
         data = engine.format(content)
         #return HttpResponse(str(data)+'123')
+        data['meta']=meta
 
         return render(request, self.template_name, data)
 
