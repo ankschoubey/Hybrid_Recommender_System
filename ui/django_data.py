@@ -60,13 +60,14 @@ def normalised_data_fetch(movieid, limit = 10):
             if len(similar_movies)>limit:
                 break
     similar_movies = [int(i['movieid']) for i in similar_movies]
-    return similar_movies
+    return random_order(similar_movies)
 
 class DataFetcher:
     numeric_values = ['number_0', 'number_1', 'number_2', 'number_3', 'number_4', 'number_5', 'number_6', 'number_7',
                       'number_8', 'number_9']
 
     def movie_title(self, movie_id):
+        formatter.format({'temp':[movie_id]})
         return formatter.get_from_db(movie_id)['title'].tolist()[0]
 
     def fetch_SimpleContentbasedfiltering(self,movieid = None):

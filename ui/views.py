@@ -25,7 +25,7 @@ from .models import Movies
 
 def ajax_update_rating(request):
     if request.method == 'POST':
-        userid = 999999 ###UserId
+        userid = request.user.id + 670
         movieid = int(request.POST['movieid'])
         rating = int(request.POST['rating'])
         if rating == 0:
@@ -42,7 +42,9 @@ class Index(View):
     template_name = 'ui/cards_view.html'
 
     def get(self, request):
-        user_id = 1
+        user_id = None
+        if request.user.id:
+            user_id = request.user.id+670
         minimum_rating = 3
         content = {}
         meta = {}
@@ -51,46 +53,57 @@ class Index(View):
         #insert_update_rating(9123312,1,5,7)
         #delete_rating(9123312,123412)
         meta = {}
-        try:
-            content['Recommended for you'] = fetcher.fetch_SimpleCollaborativefiltering(userid=user_id)
-            meta['Recommended for you'] = {'subheading': 'User Based Collaborative Filtering'}
-        except:
-            pass
+
+        if user_id:
+
+            try:
+                content['Based on users similar to you'] = fetcher.fetch_SimpleCollaborativefiltering(userid=user_id)
+                meta['Based on users similar to you'] = {'subheading': 'User Based Collaborative Filtering'}
+            except:
+                pass
+
+            try:
+                movies = list(Ratings.objects.filter(userid = user_id, rating__gte=minimum_rating).order_by('-timestamp').values('movieid'))
+                movie_id_latest_movie = movies[0]['movieid']
+                movie_id_second_movie = movies[1]['movieid']
+                print('movie_id_latest_movie',movie_id_latest_movie)
+                print('movie_id_latest_movie',movie_id_second_movie)
+
+                print('name ', fetcher.movie_title(movie_id=movie_id_latest_movie))
+
+                if not movie_id_latest_movie:
+                    raise Exception('Movie Id Latest Not Present')
+
+                key = 'People who watched ' + fetcher.movie_title(
+                    movie_id=movie_id_latest_movie) + ' also watched this:'
+                print(key)
+                content[key] = fetcher.fetch_SimpleCollaborativefiltering(movieid=movie_id_latest_movie)
+
+                meta[key] = {'subheading': 'Item Based Collaborative Filtering'}
+
+            except Exception as e:
+                print('error',e)
+
+                pass
+
+            try:
+                #print('movie_id_second_movie',movie_id_second_movie)
+                #print('contentbased',fetcher.fetch_SimpleContentbasedfiltering(
+                #    movieid=movie_id_second_movie))
+                #print('moviename ',fetcher.movie_title(movie_id=movie_id_second_movie))
+                if not movie_id_second_movie:
+                    raise Exception('Movie Id Latest Not Present')
+                key = 'Based on ' + fetcher.movie_title(movie_id=movie_id_second_movie)
+
+                content[key] = fetcher.fetch_SimpleContentbasedfiltering(
+                    movieid=movie_id_second_movie)
+                meta[key] = {'subheading': 'Content Based Filtering'}
+            except:
+                pass
+
         content['Most Popular Movies'] = fetcher.fetch_Popularitybasedfiltering()
         meta['Most Popular Movies'] = {'subheading': 'Popularity Based Filtering'}
 
-        try:
-            movies = list(Ratings.objects.filter(userid = user_id, rating__gte=minimum_rating).order_by('-timestamp').values('movieid'))
-            movie_id_latest_movie = movies[0]['movieid']
-            movie_id_second_movie = movies[1]['movieid']
-            print('movie_id_latest_movie',movie_id_latest_movie)
-            print('name ', fetcher.movie_title(movie_id=movie_id_latest_movie))
-
-            key = 'People who watched ' + fetcher.movie_title(
-                movie_id=movie_id_latest_movie) + ' also watched this:'
-
-            content[key] = fetcher.fetch_SimpleCollaborativefiltering(movieid=1)
-
-            meta[key] = {'subheading': 'Item Based Collaborative Filtering'}
-
-        except Exception as e:
-            print(e)
-
-            pass
-
-        try:
-            #print('movie_id_second_movie',movie_id_second_movie)
-            #print('contentbased',fetcher.fetch_SimpleContentbasedfiltering(
-            #    movieid=movie_id_second_movie))
-            #print('moviename ',fetcher.movie_title(movie_id=movie_id_second_movie))
-
-            key = 'Based on ' + fetcher.movie_title(movie_id=movie_id_second_movie)
-
-            content[key] = fetcher.fetch_SimpleContentbasedfiltering(
-                movieid=movie_id_second_movie)
-            meta[key] = {'subheading': 'Content Based Filtering'}
-        except:
-            pass
 
         #content['Most Popular']=popularity()
 
@@ -110,19 +123,24 @@ class MovieView(View):
     def get(self, request, pk):
         pk = int(pk)
         response = {}
-
+        meta = {}
         response['detailed_movie'] = engine.format({'a':[pk]})['movies'][pk]
         response['detailed_movie']['id'] = pk
         #return HttpResponse(str(normalised_data_fetch(pk)))
 
-        similar_movies = normalised_data_fetch(pk)[:5]
-        user_who_like_this_also_liked = fetcher.fetch_SimpleCollaborativefiltering(movieid=pk)[:5]
+        similar_movies = normalised_data_fetch(pk)[:10]
+        user_who_like_this_also_liked = fetcher.fetch_SimpleCollaborativefiltering(movieid=pk)[:10]
 
         data = engine.format({'Similar Movies':similar_movies,'Users who liked this also liked':user_who_like_this_also_liked})
         response['similar_movies'] = similar_movies
         response['user_who_like'] = user_who_like_this_also_liked
+
+        meta['Similar Movies'] = {'subheading': 'Content Based Filtering'}
+        meta['User who watched this also watched'] = {'subheading': 'Item based Collaborative Filtering'}
+
         response['content'] = {'Similar Movies': similar_movies,'User who watched this also watched': user_who_like_this_also_liked}
         response['movies'] = data['movies']
+        response['meta']=meta
         return render(request, self.template_name, response)
         #return HttpResponse(str(response))
 
@@ -169,7 +187,7 @@ class UserFormView(View):
                 if user.is_active:
                     login(request, user)
                     request.user.userid  = 670+user.id
-
+                    print('user id is ',request.user.userid)
                     return redirect('ui:index')
 
         return render(request, self.template_name, {'form': form})
@@ -190,9 +208,15 @@ class LoginFormView(View):
 
     def post(self, request):
         form = self.form_class(request.POST)# all data gets stored in POST
-        username = form.cleaned_data['username']
-        password = form.cleaned_data['password']
-
+        username = request.POST.get('username')
+        password = request.POST.get('password')#]#('payment_id', '')
+        try:
+            user = authenticate(username=username, password=password)
+            login(request, user)
+            request.user.userid = 670+user.id
+            return redirect('ui:index')
+        except:
+            return render(request, self.template_name, {'form': form})
 
         if form.is_valid():
             # take information and store in database
@@ -212,7 +236,6 @@ class LoginFormView(View):
 
                     return redirect('ui:index')
 
-        return render(request, self.template_name, {'form': form})
 
 from django.views import generic
 
@@ -245,7 +268,7 @@ class ProfileView(generic.View):
     model = Ratings
 
     def get(self, request):
-        user_id = 1
+        user_id = request.user.id + 670
         data = {}
 
         all_info =  list(Ratings.objects.filter(userid=user_id).order_by('-timestamp').values_list('movieid', 'rating'))

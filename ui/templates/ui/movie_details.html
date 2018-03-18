@@ -1,6 +1,6 @@
 {% extends "ui/index.html" %}{% load helper_tags %}
     {% block content %}
-<div style="" class="container-fluid" style="padding:20px">
+<div style="" class="container-fluid" style="">
     <div class="row" style="padding:20px">
     <div class="col-5">{% load staticfiles %}
 
@@ -22,44 +22,14 @@
       <p><strong>Movie Categories</strong>:{{detailed_movie.categories}}</p>
     </h5>
   </div>
+            {% if user.is_authenticated %}
+
   <div class="card-footer text-muted">
       <strong>Rate this movie</strong>:{% include 'ui/ratings_template.html' with movieid=detailed_movie.id %}
   </div>
+            {% endif %}
 </div>
         </div>
-
-        <h1>Similar Movies</h1>
-<div class="card-columns" style="column-count: 5">
-            {% for j in similar_movies%}
-                {% with k=movies|hash:j %}
-                <div class="col">{% load staticfiles %}
-                <div class="card" style="" id='{{j}}' >
-                <img class="card-img-top" src="{% static k.poster %}" alt="{{k.title}}">
-                <div class="card-body">
-                <a class="card-title" href="http://127.0.0.1:8000/{{j}}/">{{k.title}}</a>
-
-                <!--<p class="card-text">{{k.overview}}</p>-->
-                    </div>
-                </div>
-                </div>
-                {% endwith %}
-            {% endfor %}
-            </div>
-                <h1>Users who liked this also liked</h1>
-            <div class="card-columns" style="column-count: 5">
-            {% for j in user_who_like%}
-                {% with k=movies|hash:j %}
-                <div class="col">{% load staticfiles %}
-                <div class="card" style="" id='{{j}}' >
-                <img class="card-img-top" src="{% static k.poster %}" alt="{{k.title}}">
-                <div class="card-body">
-                <a class="card-title" href="http://127.0.0.1:8000/{{j}}/">{{k.title}}</a>
-                <!--<p class="card-text">{{k.overview}}</p>-->
-                    </div>
-                </div>
-                </div>
-                {% endwith %}
-            {% endfor %}
-            </div>
-
+        </div>
+        {% include 'ui/cards.html' %}
     {% endblock %}

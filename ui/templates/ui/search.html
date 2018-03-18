@@ -1,8 +1,8 @@
 {% extends "ui/index.html" %}{% load helper_tags %}
 {% block content %}
+<div class="container" style="padding:10px">
 
 {% if object_list|length > 0%}
-<div class="container" style="padding:10px">
     <h2>Search Results for: <strong>{{search_term}}</strong></h2>
     <h5>{{object_list|length}} movies found</h5>
 <div class="table-responsive">
@@ -31,8 +31,21 @@
           </tbody>
       </table>
         </div>
-    </div>
 {% else %}
-<p>Error</p>
+
+
+<div class="jumbotron">
+    <h1 class="display-4">Sorry! We were unable to find <strong>'{{search_term}}'</strong> in our database.</h1>
+  <hr class="my-4">
+  <p>This is because we are using MovieLens Dataset with limited 9,000 movies.
+      The Dataset was last updated 10/2016.</p>
+
+    <p>We recommend you search for a new term.</p>
+  <p class="lead">
+    <a class="btn btn-primary btn-lg" href="" role="button">Get a list of all movies</a>
+  </p>
+</div>
 {% endif %}
+        </div>
+
 {% endblock %}

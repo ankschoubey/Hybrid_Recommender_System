@@ -349,13 +349,16 @@ class JSON_formatter:
             temp = {}
 
             for key, value in data.to_dict().items():
-                temp[key]= value[0]
-                print('key', index)
-                print('value = ',value[0])
-
+                try:
+                    temp[key]= value[0]
+                    #print('key', index)
+                    #print('value = ',value[0])
+                except:
+                    pass
                 #TODO#
                 #temp[key]
                 #print(Movielens(None).get_movie_type(index))
+
             temp['categories'] = Movielens().get_movie_type(movie_ids[index])
             #print('temp',temp)
             final_dict[movie_ids[index]] =temp

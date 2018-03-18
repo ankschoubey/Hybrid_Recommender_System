@@ -16,6 +16,7 @@ Helpful to check if everything is working correctly
 
 if not core.file_exists('defaults.json'):
     generate_defaults.generate_defaults()
+#generate_defaults.generate_defaults()
 
 defaults = core.json_read('defaults.json')
 
@@ -40,6 +41,7 @@ ml = Movielens(db)
 movies_id = 8
 
 movie_title = ml.get_movie_names([movies_id]).loc[0,'title']
+#movie_title = ''
 user_id = 3
 
 print(ml.get_movie_type(movies_id))

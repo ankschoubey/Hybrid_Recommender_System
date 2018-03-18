@@ -77,7 +77,7 @@ WSGI_APPLICATION = 'Hybrid_Recommender_System.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'production_movielens',
+        'NAME': 'movielens1',
         'USER': 'root',
         'PASSWORD': 'root',
         'HOST': 'localhost',
