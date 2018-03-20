@@ -55,3 +55,6 @@ def generate_defaults():
 
     with open('defaults.json','w') as file:
         json.dump(defaults, file, indent=4)
+
+if __name__ == "__main__":
+    generate_defaults()
