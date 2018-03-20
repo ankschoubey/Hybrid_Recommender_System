@@ -8,6 +8,10 @@ Creation: ```conda env create -f conda_environment.yml```
 
 Load Environment: ```source activate recommender```
 
+For those using ```pip```
+
+```pip install -r requirements.txt```
+
 ## Download and extract
 
 [MovieLens Dataset](http://files.grouplens.org/datasets/movielens/ml-latest-small.zip).
@@ -15,6 +19,7 @@ Load Environment: ```source activate recommender```
 ## For building database
 
 Use MySQL. Create a empty database. Remember database name.
+
 
 ## Running
 
@@ -26,10 +31,8 @@ If you are setting up for the first time you will be asked for database details.
 
 If you want to reset run ```generate_defaults.py``` or delete ```defaults.json``` file
 
+Also you would have to make changes to ```DATABASE```variable in ```Hybrid_Recommender_System/setting.py``` which Django will use.
+
 ## Old Build
 [v0.1-alpha](https://github.com/ankschoubey/Hybrid-Recommender-System/releases/tag/v0.1-alpha)
-
-Upcomming:
-
-**v0.2-alpha**
-- Django Support
+[v0.2-alpha] - Django Support
