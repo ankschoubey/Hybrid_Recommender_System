@@ -33,6 +33,8 @@ If you want to reset run ```generate_defaults.py``` or delete ```defaults.json``
 
 Also you would have to make changes to ```DATABASE```variable in ```Hybrid_Recommender_System/setting.py``` which Django will use.
 
-## Old Build
-[v0.1-alpha](https://github.com/ankschoubey/Hybrid-Recommender-System/releases/tag/v0.1-alpha)
-[v0.2-alpha] - Django Support
+## Release Versions
+
+[v0.1-alpha](https://github.com/ankschoubey/Hybrid-Recommender-System/releases/tag/v0.1-alpha) - Command Line Interface
+
+[v0.2-alpha](https://github.com/ankschoubey/Hybrid_Recommender_System/releases/tag/v0.2-alpha) - Django Support
