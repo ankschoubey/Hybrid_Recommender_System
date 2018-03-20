@@ -20,6 +20,12 @@ class Hybridization:
 class PopularityBasedFiltering:
 
     def fit(self, ratings):
+        # scale rating to be asdbsadlkfasdlk
+        # to be made 2.5
+        #ratings = ratings.astype(np.float64)
+
+        #ratings[ratings!=0]-=2.5
+        #print(ratings)
         self.summation = ratings.sum(axis=0)
         #print(self.summation)
 
@@ -32,11 +38,15 @@ class PopularityBasedFiltering:
         self.summation = pd.Series(data=self.summation)
         #print(self.summation)
 
+    #def remap(self, ratings,center = 2.5):
+
+
     def predict(self,ids = None, limit=10):
 
         if ids is None:
             #selected_ids = self.summation
             #print('print',core.reverse_argsort(self.summation.iloc[0].values)[:limit])
+            print('ratings')
             print(self.overall_popularity[:limit])
             return self.overall_popularity[:limit]
         #exit()

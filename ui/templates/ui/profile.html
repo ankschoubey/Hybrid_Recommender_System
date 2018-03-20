@@ -22,8 +22,8 @@
 
         {% for i in user_history %}
             <tr>
-              <td><a href="{{i.movieid}}">{{i.movieid}}</a></td>
-              <td><a href="{{i.movieid}}">{{i.title}}</a></td>
+              <td><a href="{% url 'ui:movie_view' i.movieid %}">{{i.movieid}}</a></td>
+              <td><a href="{% url 'ui:movie_view' i.movieid %}">{{i.title}}</a></td>
               <td>{{i.rating}}</td>
               <td>{{i.year}}</td>
             </tr>

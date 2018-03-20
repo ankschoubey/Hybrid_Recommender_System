@@ -257,10 +257,10 @@ class TheMovieDB:
         info['overview'] = movie['overview']
         if movie['poster_path']:
             info['poster'] = self.image_path + movie['poster_path']
-            info['poster_path'] = movie['poster_path']
+            info['poster_path'] = info['poster']
         if movie['backdrop_path']:
             info['backdrop'] = self.image_path + movie['backdrop_path']
-            info['backdrop_path'] = movie['backdrop_path']
+            info['backdrop_path'] = info['backdrop']
         info['video'] = movie['video']
         if info['production_countries']:
             info['production_countries'] = movie['production_countries'][0]['iso_3166_1']
@@ -311,6 +311,7 @@ class JSON_formatter:
                 data = self.movie_db.movie(id=i['imdbId'])
             except:
                 continue
+
             data['movieId'] = str(ids[index])
             poster_file_location = 'movie_images/poster/' + data['movieId'] + '.png'
             if data.get('poster',False):

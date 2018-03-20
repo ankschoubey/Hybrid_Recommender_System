@@ -20,8 +20,8 @@
 
         {% for i in object_list %}
             <tr>
-              <td><a href="{{i.movieid}}">{{i.movieid}}</a></td>
-              <td><a href="{{i.movieid}}">{{i.title}}</a></td>
+              <td><a href="{% url 'ui:movie_view' i.movieid %}">{{i.movieid}}</a></td>
+              <td><a href="{% url 'ui:movie_view' i.movieid %}">{{i.title}}</a></td>
               <td>{{i.year}}</td>
               <td>{{i.year}}</td>
 

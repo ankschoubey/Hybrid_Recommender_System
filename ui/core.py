@@ -31,6 +31,19 @@ def get_logger(module_path, file_name = 'execution.log'):
 
 # Computation
 
+import random
+
+def random_order(a):
+    random.shuffle(a, random.random)
+    return a
+
+def get_column(matrix, column_no):
+    data = []
+    for i in matrix:
+        data.append(i[column_no])
+
+    return data
+
 def reverse_argsort(arg):
     return np.argsort(arg)[::-1]
 
@@ -43,7 +56,8 @@ def file_exists(location):
 
 def randomly_select_items(array, limit=None):
     if limit:
-        return random.choice(array)[:limit]
+        print(random.choice(array),type(random.choice(array)),limit)
+        return list(random.choice(array))[:limit]
     return random.choice(array)
 
 def union(lists):
@@ -76,6 +90,7 @@ def current_seconds():
     our_timezone = pytz.timezone('Asia/Kolkata')
     current_date = our_timezone.localize(current_date)
     return (current_date-origin_date).total_seconds()
+
 
 # Data
 

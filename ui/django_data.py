@@ -4,23 +4,11 @@ from django.db.models import Avg
 from django.db.models import Count
 from .models import NormalisedContentbasedfilteringMap, NormalisedContentbasedfilteringSimilarity, SimpleCollaborativefilteringItemRecommendation, SimpleCollaborativefilteringUserRecommendation, SimpleContentbasedfiltering, Popularitybasedfiltering
 from .data import JSON_formatter, Movielens
+from .core import random_order, get_column
 
 formatter = JSON_formatter()
 movie_lens = Movielens()
 numeric_values = [ 'number_0', 'number_1', 'number_2', 'number_3', 'number_4', 'number_5', 'number_6', 'number_7', 'number_8', 'number_9']
-
-import random
-
-def random_order(a):
-    random.shuffle(a, random.random)
-    return a
-
-def get_column(matrix, column_no):
-    data = []
-    for i in matrix:
-        data.append(i[column_no])
-
-    return data
 
 def delete_rating(userid, movieid):
     Ratings.objects.filter(userid=userid, movieid=movieid).delete()

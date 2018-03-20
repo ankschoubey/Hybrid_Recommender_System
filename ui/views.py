@@ -10,8 +10,9 @@ from django.views.generic import View
 from django.contrib.auth import authenticate, login
 from django.shortcuts import render, redirect
 from .data import JSON_formatter
-from .core import current_seconds
+from .core import current_seconds, random_order
 from .django_data import insert_update_rating, delete_rating, get_column
+from .algorithms import Hybridization
 
 
 from django.http import HttpResponse
@@ -37,28 +38,44 @@ def ajax_update_rating(request):
     else:
         return HttpResponse('problem')
 
+def ajax_error_loading_image(request):
+    if request.method == 'POST':
+
+        # check if image exists in local storage
+
+        # if it does not check get image location and where to save from database
+        return HttpResponse('Updated')
+
+    else:
+        return HttpResponse('Problem')
+
 class Index(View):
 
     template_name = 'ui/cards_view.html'
 
     def get(self, request):
         user_id = None
+        movie_id_latest_movie = None
+        movie_id_second_movie = None
+        cf_user = None
+        cf_item = None
+        cb_item = None
+        hybrid_recommendation = None
+
         if request.user.id:
             user_id = request.user.id+670
         minimum_rating = 3
+
         content = {}
         meta = {}
-        movie_id_latest_movie = None
-        movie_id_second_movie = None
+
         #insert_update_rating(9123312,1,5,7)
         #delete_rating(9123312,123412)
-        meta = {}
 
+        # Switching Hybridization
         if user_id:
-
             try:
-                content['Based on users similar to you'] = fetcher.fetch_SimpleCollaborativefiltering(userid=user_id)
-                meta['Based on users similar to you'] = {'subheading': 'User Based Collaborative Filtering'}
+                cf_user = fetcher.fetch_SimpleCollaborativefiltering(userid=user_id)
             except:
                 pass
 
@@ -66,43 +83,94 @@ class Index(View):
                 movies = list(Ratings.objects.filter(userid = user_id, rating__gte=minimum_rating).order_by('-timestamp').values('movieid'))
                 movie_id_latest_movie = movies[0]['movieid']
                 movie_id_second_movie = movies[1]['movieid']
-                print('movie_id_latest_movie',movie_id_latest_movie)
-                print('movie_id_latest_movie',movie_id_second_movie)
-
-                print('name ', fetcher.movie_title(movie_id=movie_id_latest_movie))
-
-                if not movie_id_latest_movie:
-                    raise Exception('Movie Id Latest Not Present')
-
-                key = 'People who watched ' + fetcher.movie_title(
-                    movie_id=movie_id_latest_movie) + ' also watched this:'
-                print(key)
-                content[key] = fetcher.fetch_SimpleCollaborativefiltering(movieid=movie_id_latest_movie)
-
-                meta[key] = {'subheading': 'Item Based Collaborative Filtering'}
-
-            except Exception as e:
-                print('error',e)
-
-                pass
-
-            try:
-                #print('movie_id_second_movie',movie_id_second_movie)
-                #print('contentbased',fetcher.fetch_SimpleContentbasedfiltering(
-                #    movieid=movie_id_second_movie))
-                #print('moviename ',fetcher.movie_title(movie_id=movie_id_second_movie))
-                if not movie_id_second_movie:
-                    raise Exception('Movie Id Latest Not Present')
-                key = 'Based on ' + fetcher.movie_title(movie_id=movie_id_second_movie)
-
-                content[key] = fetcher.fetch_SimpleContentbasedfiltering(
-                    movieid=movie_id_second_movie)
-                meta[key] = {'subheading': 'Content Based Filtering'}
             except:
                 pass
 
+            if movie_id_latest_movie:
+                cf_item = fetcher.fetch_SimpleCollaborativefiltering(movieid=movie_id_latest_movie)
+
+            if movie_id_second_movie:
+                cb_item = fetcher.fetch_SimpleContentbasedfiltering(movieid=movie_id_second_movie)
+
+        recommendations_not_null = [i for i in [cf_user,cf_item,cb_item] if i]
+
+        if len(recommendations_not_null)>1:
+            hybrid_recommendation = Hybridization.mixed(recommendations_not_null).tolist()
+            hybrid_recommendation = random_order(hybrid_recommendation)[:10]
+
+        if hybrid_recommendation:
+            key = 'Recommended for you'
+            content[key] = hybrid_recommendation
+            meta[key] = {'subheading': 'Mixed Hybridization'}
+
+        if cf_user:
+            key = 'Based on users similar to you'
+            content[key] = cf_user
+            meta[key] = {'subheading': 'User Based Collaborative Filtering'}
+
+        if cf_item:
+            key = 'People who watched ' + fetcher.movie_title(movie_id=movie_id_latest_movie) + ' also watched this:'
+            content[key] = cf_item
+            meta[key] = {'subheading': 'Item Based Collaborative Filtering'}
+
+        if cb_item:
+            key = 'Based on ' + fetcher.movie_title(movie_id=movie_id_second_movie)
+
+            content[key] = cb_item
+            meta[key] = {'subheading': 'Content Based Filtering'}
+
+        # start creating content to displat
+
+        # if user_id:
+        #
+        #     try:
+        #         content['Based on users similar to you'] = fetcher.fetch_SimpleCollaborativefiltering(userid=user_id)
+        #         meta['Based on users similar to you'] = {'subheading': 'User Based Collaborative Filtering'}
+        #     except:
+        #         pass
+        #
+        #     try:
+        #         movies = list(Ratings.objects.filter(userid = user_id, rating__gte=minimum_rating).order_by('-timestamp').values('movieid'))
+        #         movie_id_latest_movie = movies[0]['movieid']
+        #         movie_id_second_movie = movies[1]['movieid']
+        #         print('movie_id_latest_movie',movie_id_latest_movie)
+        #         print('movie_id_latest_movie',movie_id_second_movie)
+        #
+        #         print('name ', fetcher.movie_title(movie_id=movie_id_latest_movie))
+        #
+        #         if not movie_id_latest_movie:
+        #             raise Exception('Movie Id Latest Not Present')
+        #
+        #         key = 'People who watched ' + fetcher.movie_title(
+        #             movie_id=movie_id_latest_movie) + ' also watched this:'
+        #         print(key)
+        #         content[key] = fetcher.fetch_SimpleCollaborativefiltering(movieid=movie_id_latest_movie)
+        #
+        #         meta[key] = {'subheading': 'Item Based Collaborative Filtering'}
+        #
+        #     except Exception as e:
+        #         print('error',e)
+        #
+        #         pass
+        #
+        #     try:
+        #         #print('movie_id_second_movie',movie_id_second_movie)
+        #         #print('contentbased',fetcher.fetch_SimpleContentbasedfiltering(
+        #         #    movieid=movie_id_second_movie))
+        #         #print('moviename ',fetcher.movie_title(movie_id=movie_id_second_movie))
+        #         if not movie_id_second_movie:
+        #             raise Exception('Movie Id Latest Not Present')
+        #         key = 'Based on ' + fetcher.movie_title(movie_id=movie_id_second_movie)
+        #
+        #         content[key] = fetcher.fetch_SimpleContentbasedfiltering(
+        #             movieid=movie_id_second_movie)
+        #         meta[key] = {'subheading': 'Content Based Filtering'}
+        #     except:
+        #         pass
+
         content['Most Popular Movies'] = fetcher.fetch_Popularitybasedfiltering()
         meta['Most Popular Movies'] = {'subheading': 'Popularity Based Filtering'}
+
 
 
         #content['Most Popular']=popularity()
@@ -135,7 +203,7 @@ class MovieView(View):
         response['similar_movies'] = similar_movies
         response['user_who_like'] = user_who_like_this_also_liked
 
-        meta['Similar Movies'] = {'subheading': 'Content Based Filtering'}
+        meta['Similar Movies'] = {'subheading': 'Normalised Content Based Filtering'}
         meta['User who watched this also watched'] = {'subheading': 'Item based Collaborative Filtering'}
 
         response['content'] = {'Similar Movies': similar_movies,'User who watched this also watched': user_who_like_this_also_liked}
