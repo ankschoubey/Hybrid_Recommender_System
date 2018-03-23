@@ -23,6 +23,10 @@ fetcher = DataFetcher()
 
 from .models import Movies
 
+blocked_movies = [266,713,2288,910 ,944 ,1456 ,2039 ,2141 ,3048 ,3104 ,3465 ,4157 ,4464 ,5336 ,6113 ,6963 ,7083 ,7546 ,8633 ,8721 ,8952,3083,3846,7060,4947,5370,6985]
+
+def remove_blocked_movies(movies):
+    return [i for i in movies if i not in blocked_movies]
 
 def ajax_update_rating(request):
     if request.method == 'POST':
@@ -76,6 +80,7 @@ class Index(View):
         if user_id:
             try:
                 cf_user = fetcher.fetch_SimpleCollaborativefiltering(userid=user_id)
+                cf_user = remove_blocked_movies(cf_user)
             except:
                 pass
 
@@ -88,9 +93,11 @@ class Index(View):
 
             if movie_id_latest_movie:
                 cf_item = fetcher.fetch_SimpleCollaborativefiltering(movieid=movie_id_latest_movie)
+                cf_item = remove_blocked_movies(cf_item)
 
             if movie_id_second_movie:
                 cb_item = fetcher.fetch_SimpleContentbasedfiltering(movieid=movie_id_second_movie)
+                cb_item = remove_blocked_movies(cb_item)
 
         recommendations_not_null = [i for i in [cf_user,cf_item,cb_item] if i]
 
@@ -168,7 +175,7 @@ class Index(View):
         #     except:
         #         pass
 
-        content['Most Popular Movies'] = fetcher.fetch_Popularitybasedfiltering()
+        content['Most Popular Movies'] = remove_blocked_movies(fetcher.fetch_Popularitybasedfiltering())
         meta['Most Popular Movies'] = {'subheading': 'Popularity Based Filtering'}
 
 
@@ -196,8 +203,8 @@ class MovieView(View):
         response['detailed_movie']['id'] = pk
         #return HttpResponse(str(normalised_data_fetch(pk)))
 
-        similar_movies = normalised_data_fetch(pk)[:10]
-        user_who_like_this_also_liked = fetcher.fetch_SimpleCollaborativefiltering(movieid=pk)[:10]
+        similar_movies = remove_blocked_movies(normalised_data_fetch(pk))[:10]
+        user_who_like_this_also_liked = remove_blocked_movies(fetcher.fetch_SimpleCollaborativefiltering(movieid=pk))[:10]
 
         data = engine.format({'Similar Movies':similar_movies,'Users who liked this also liked':user_who_like_this_also_liked})
         response['similar_movies'] = similar_movies

@@ -388,3 +388,15 @@ class JSON_formatter:
         #print(dict.keys())
 
         return response
+
+
+"""
+a = JSON_Former(db)
+
+data = {'Recommended for you':[1,2,3,4,5], 'Vased'}
+
+a.format(data)
+
+{'content': {'Recommended for you':[1,2,3,4,5], 'Vased'} , 'movies':{1: }}
+
+"""

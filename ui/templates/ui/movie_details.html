@@ -25,8 +25,21 @@
             {% if user.is_authenticated %}
 
   <div class="card-footer text-muted">
-      <strong>Rate this movie</strong>:{% include 'ui/ratings_template.html' with movieid=detailed_movie.id %}
+      <div class="row vertical-align" style="align-items: center;display: flex;">
+      <div class="col" align="right">
+          <strong>Rate this movie</strong>:
+      </div>
+      <div  class="col"  style="vertical-align: middle;">
+      {% include 'ui/ratings_template.html' with movieid=detailed_movie.id %}
+          </div>
+      </div>
   </div>
+            {% else%}
+                  <div class="card-footer text-muted">
+      <div class="row vertical-align" style="align-items: center;display: flex;">
+          Sign in to rate this movie
+          </div>
+          </div>
             {% endif %}
 </div>
         </div>

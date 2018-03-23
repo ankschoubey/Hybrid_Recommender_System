@@ -84,7 +84,7 @@ fitting = time() - start
 print('Fit time Normalised_ContentBasedFiltering = ',fitting)
 ncb_recommendation = nb.predict(movies_id)
 
-print(nb.export())
+#print(nb.export())
 
 save_exports_to_db(nb.export(), db)
 

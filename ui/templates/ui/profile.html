@@ -2,12 +2,12 @@
 
 {% block content %}
 
-
-{% if user_history|length > 0%}
 <div class="container" style="padding:10px">
     <h1>History of Movies Rated by You</h1>
-
     <h5>{{user_history|length}} movies rated</h5>
+
+{% if user_history|length > 0%}
+
 <div class="table-responsive">
       <table class="table table-bordered table-hover">
           <thead class="thead-dark ">
@@ -32,9 +32,19 @@
           </tbody>
       </table>
         </div>
-    </div>
 {% else %}
-<p>Error</p>
+<div class="jumbotron">
+    <h1 class="display-4">Sorry! You haven't rated any movies!</h1>
+
+  <hr class="my-4">
+  <!--<p>We need you to rate some movies before you get any recommendations.</p>-->
+
+    <p>We recommend you search functionality to find your favourite movies.</p>
+  <!--<p class="lead">-->
+    <!--<a class="btn btn-primary btn-lg" href="" role="button">Get a list of all movies</a>-->
+  <!--</p>-->
+</div>
 {% endif %}
+    </div>
 
 {% endblock %}
