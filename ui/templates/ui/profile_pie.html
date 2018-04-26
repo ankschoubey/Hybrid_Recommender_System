@@ -1,0 +1,78 @@
+{% load staticfiles %}
+<script src="{% static 'js/zingchart.min.js' %}"></script>
+  <script>
+    zingchart.MODULESDIR = "{% static 'js/zingchart_modules' %}";
+    ZC.LICENSE = ["569d52cefae586f634c54f86dc99e6a9", "ee6b7db5b51705a13dc2339db3edaf6d"];
+  </script>
+  <style>
+    @import 'https://fonts.googleapis.com/css?family=Open+Sans';
+
+    #myChart {
+      width: 100%;
+      height: 100%;
+      min-height: 300px;
+    }
+
+    .zc-ref {
+      display: none;
+    }
+  </style>
+
+ <div id='myChart'><a class="zc-ref" href="https://www.zingchart.com/">Charts by ZingChart</a></div>
+  <script>
+    var plotting_data = [
+        {% for key, value in user_profile.items%}
+            {% if value > 0 %}
+            {
+              values: [{{value}}],
+              text: "{{key}}",
+            },
+            {% endif %}
+        {% endfor%}
+        ]
+
+    var myConfig = {
+      type: "pie",
+      plot: {
+        borderColor: "#2B313B",
+        borderWidth: 1,
+        // slice: 90,
+        valueBox: {
+          placement: 'out',
+          text: '%t\n%npv%',
+          fontFamily: "Open Sans"
+        },
+        tooltip: {
+          fontSize: '18',
+          fontFamily: "Open Sans",
+          padding: "5 10",
+          text: "%npv%"
+        },
+        animation: {
+          effect: 2,
+          method: 5,
+          speed: 500,
+          sequence: 1,
+        }
+      },
+      title: {
+        fontColor: "#8e99a9",
+        text: '',
+        align: "center",
+        offsetX: 10,
+        fontFamily: "Open Sans",
+        fontSize: 25
+      },
+      plotarea: {
+        margin: "20 0 0 0"
+      },
+      series: plotting_data
+    };
+
+    zingchart.render({
+      id: 'myChart',
+      data: myConfig,
+      height: '100%',
+      width: '100%'
+    });
+  </script>

@@ -13,7 +13,7 @@
                 <th>Movie Id</th>
               <th>Title</th>
               <th>Years</th>
-              <th>Categories</th>
+              <!--<th>Categories</th>-->
             </tr>
           </thead>
           <tbody>
@@ -22,7 +22,6 @@
             <tr>
               <td><a href="{% url 'ui:movie_view' i.movieid %}">{{i.movieid}}</a></td>
               <td><a href="{% url 'ui:movie_view' i.movieid %}">{{i.title}}</a></td>
-              <td>{{i.year}}</td>
               <td>{{i.year}}</td>
 
             </tr>

@@ -121,6 +121,8 @@ class Movielens_Prepare:
 
     def load_links(self):
         df = pd.read_csv(self.source+'/links.csv')
+        core.mem_usage(df) # Mem Usage
+
         self.generate_movie_map(df)
         df['movieId'] = df['movieId'].map(self.movie_mapping)
         #df = df.rename(columns={'movieId': 'id'})
@@ -145,6 +147,7 @@ class Movielens_Prepare:
 
     def load_movies(self):
         df = pd.read_csv(self.source+'/movies.csv')
+        core.mem_usage(df) # Mem Usage
 
         # Map original_ids to our_ids
         self.generate_movie_map(df)
@@ -164,6 +167,15 @@ class Movielens_Prepare:
 
     def load_ratings(self,no_of_movies=0, no_of_users=0):
         df = pd.read_csv(self.source+'/ratings.csv')
+
+        print('Before')
+        core.mem_usage(df) # Mem Usage
+        gl_int = df.select_dtypes(include=['int'])
+        df = df.apply(pd.to_numeric,downcast='unsigned')
+        print('After')
+        core.mem_usage(df) # Mem Usage
+
+        #print(gl_int)
         df['movieId'] = df['movieId'].map(self.movie_mapping)
         df['userId'] = df['userId'] - 1
         df['rating'] = df['rating'].astype(int)
@@ -185,10 +197,20 @@ class Movielens:
         matrix = sparse.csr_matrix((df['rating'], (df['userId'], df['movieID'])))
         return matrix
 
-    def get_movie_names(self, ids):
-        ids = list(map(str,ids))
-        df = self.db.get(table = 'movies', columns=['title'], where='movieId IN ('+ ','.join(ids)+')')
+    def load_ratings_as_df(self):
+        df = self.db.get(table = 'ratings', columns = ['userId', 'movieID', 'rating'])
         return df
+
+    def get_movie_names(self, ids=None):
+
+        if ids is None:
+            df = self.db.get(table='movies', columns=['title'])
+        else:
+            ids = list(map(str,ids))
+            df = self.db.get(table = 'movies', columns=['title'], where='movieId IN ('+ ','.join(ids)+')')
+        return df
+
+
 
     def get_movie_type(self, id):
         id = str(id)

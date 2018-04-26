@@ -63,6 +63,13 @@ def randomly_select_items(array, limit=None):
 def union(lists):
     return reduce(np.union1d, lists)
 
+
+def sort_list_using_another(to_sort, sort_order):
+    zipped_pairs = zip(sort_order, to_sort)
+
+    z = [x for _, x in sorted(zipped_pairs)]
+
+    return z
 # Pickle and JSON and File
 
 def directory_maker(path): # makes directory if path does not exists
@@ -126,3 +133,15 @@ def normalise_dataframe(df):
     normalised_df['normalised_key'] = normalised_df.index.values
 
     return pd.DataFrame(df['normalised_key']), normalised_df
+
+# Memory Usage
+
+def mem_usage(pandas_obj):
+    if isinstance(pandas_obj,pd.DataFrame):
+        usage_b = pandas_obj.memory_usage(deep=True).sum()
+    else: # we assume if not a df it's a series
+        usage_b = pandas_obj.memory_usage(deep=True)
+    usage_mb = usage_b / 1024 ** 2 # convert bytes to megabytes
+    reply = "{:03.2f} MB".format(usage_mb)
+    print(reply)
+    return reply

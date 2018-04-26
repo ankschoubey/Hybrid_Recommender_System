@@ -8,6 +8,36 @@
 from django.db import models
 
 
+class BagOfWordsContentbasedfilteringRecommend(models.Model):
+    index = models.BigIntegerField(blank=True, null=True)
+    movieid = models.BigIntegerField(db_column='movieId', blank=True, null=True)  # Field name made lowercase.
+    similar = models.TextField(blank=True, null=True)
+
+    class Meta:
+        managed = True
+        db_table = 'Bag_of_Words_ContentBasedFiltering_recommend'
+
+
+class BagOfWordsContentbasedfilteringVocabulary(models.Model):
+    index = models.BigIntegerField(blank=True, null=True)
+    word = models.TextField(blank=True, null=True)
+    value = models.BigIntegerField(blank=True, null=True)
+
+    class Meta:
+        managed = True
+        db_table = 'Bag_of_Words_ContentBasedFiltering_vocabulary'
+
+
+class BagOfWordsContentbasedfilteringWordvector(models.Model):
+    index = models.BigIntegerField(blank=True, null=True)
+    sentence = models.BigIntegerField(blank=True, null=True)
+    word = models.BigIntegerField(blank=True, null=True)
+    occurance = models.BigIntegerField(blank=True, null=True)
+
+    class Meta:
+        managed = True
+        db_table = 'Bag_of_Words_ContentBasedFiltering_wordvector'
+
 class NormalisedContentbasedfilteringData(models.Model):
     index = models.BigIntegerField(blank=True, null=True)
     action = models.BigIntegerField(db_column='Action', blank=True, null=True)  # Field name made lowercase.
@@ -83,6 +113,14 @@ class Popularitybasedfiltering(models.Model):
         managed = True
         db_table = 'PopularityBasedFiltering'
 
+class SvdCollaborativefilteringUserRecommendation(models.Model):
+    index = models.BigIntegerField(blank=True, null=True)
+    recommendation = models.TextField(blank=True, null=True)
+    userid = models.BigIntegerField(db_column='userId', blank=True, null=True)  # Field name made lowercase.
+
+    class Meta:
+        managed = True
+        db_table = 'SVD_CollaborativeFiltering_user_recommendation'
 
 class SimpleCollaborativefilteringItemRecommendation(models.Model):
     index = models.BigIntegerField(blank=True, null=True)
@@ -238,3 +276,40 @@ class Ratings(models.Model):
     class Meta:
         managed = True
         db_table = 'ratings'
+
+class CollaborativeViaContentUserRecommendation(models.Model):
+    index = models.BigIntegerField(blank=True, null=True)
+    recommendation = models.TextField(blank=True, null=True)
+    userid = models.BigIntegerField(db_column='userId', blank=True, null=True)  # Field name made lowercase.
+
+    class Meta:
+        managed = True
+        db_table = 'Collaborative_Via_Content_user_recommendation'
+
+
+class CollaborativeViaContentUserprofile(models.Model):
+    index = models.BigIntegerField(blank=True, null=True)
+    action = models.FloatField(db_column='Action', blank=True, null=True)  # Field name made lowercase.
+    adventure = models.FloatField(db_column='Adventure', blank=True, null=True)  # Field name made lowercase.
+    animation = models.FloatField(db_column='Animation', blank=True, null=True)  # Field name made lowercase.
+    children = models.FloatField(db_column='Children', blank=True, null=True)  # Field name made lowercase.
+    comedy = models.FloatField(db_column='Comedy', blank=True, null=True)  # Field name made lowercase.
+    crime = models.FloatField(db_column='Crime', blank=True, null=True)  # Field name made lowercase.
+    documentary = models.FloatField(db_column='Documentary', blank=True, null=True)  # Field name made lowercase.
+    drama = models.FloatField(db_column='Drama', blank=True, null=True)  # Field name made lowercase.
+    fantasy = models.FloatField(db_column='Fantasy', blank=True, null=True)  # Field name made lowercase.
+    film_noir = models.FloatField(db_column='Film_Noir', blank=True, null=True)  # Field name made lowercase.
+    horror = models.FloatField(db_column='Horror', blank=True, null=True)  # Field name made lowercase.
+    musical = models.FloatField(db_column='Musical', blank=True, null=True)  # Field name made lowercase.
+    mystery = models.FloatField(db_column='Mystery', blank=True, null=True)  # Field name made lowercase.
+    romance = models.FloatField(db_column='Romance', blank=True, null=True)  # Field name made lowercase.
+    sci_fi = models.FloatField(db_column='Sci_Fi', blank=True, null=True)  # Field name made lowercase.
+    thriller = models.FloatField(db_column='Thriller', blank=True, null=True)  # Field name made lowercase.
+    war = models.FloatField(db_column='War', blank=True, null=True)  # Field name made lowercase.
+    western = models.FloatField(db_column='Western', blank=True, null=True)  # Field name made lowercase.
+    unknown = models.FloatField(blank=True, null=True)
+    userid = models.BigIntegerField(db_column='userId', blank=True, null=True)  # Field name made lowercase.
+
+    class Meta:
+        managed = True
+        db_table = 'Collaborative_Via_Content_userprofile'

@@ -2,6 +2,8 @@ from ui import core
 import pandas as pd
 from tqdm import trange
 import numpy as np
+from scipy.sparse import csr_matrix
+import string
 
 class Hybridization:
     def __init__(self):
@@ -9,7 +11,29 @@ class Hybridization:
 
     @staticmethod
     def mixed(lists):
-        return core.union(lists)
+        filled_lists = []
+
+        for i in lists:
+            try:
+                filled_lists.append(list(i))
+            except:
+                # filter out values that are NONE
+                pass
+
+        occurance_count = {}
+        for i in filled_lists:
+            for j in i:
+                occurance_count.setdefault(j,0)
+                occurance_count[j]+=1
+
+        unique_items=list(occurance_count.keys())
+        occurances=list(occurance_count.values())
+        #print(occurance_count)
+
+        results = core.sort_list_using_another(to_sort=unique_items, sort_order=occurances)[::-1]
+        #print(results)
+        return results
+        #return core.union(lists)
 
     def switching(self):
         pass
@@ -97,9 +121,6 @@ class PopularityBasedFiltering:
         data[name] = df
         return data
 
-
-
-
 class Simple_CollaborativeFiltering:
 
     def fit(self, ratings):
@@ -108,7 +129,6 @@ class Simple_CollaborativeFiltering:
 
         # item similarity matrix
         data = ratings.transpose()
-        data[data > 0] = 1
         self.item_similarities = core.pairwise_cosine(data)
 
         self.ratings = ratings
@@ -126,7 +146,29 @@ class Simple_CollaborativeFiltering:
         arguments_sorted = arguments_sorted[arguments_sorted != item_id]
         return arguments_sorted
 
-    def predict_for_user(self, user_id, limit_similar_users=3):
+    def predict_rating(self, test, limit_similar_users=10):
+
+        user_id, item_id = test[0], test[1]
+
+        top_10_similar_users = core.reverse_argsort(self.user_similarities[user_id])[1:limit_similar_users]
+
+        value = []
+        weightage_of_item = []
+        similarities = []
+        for k in top_10_similar_users:
+            if self.ratings[k, item_id]:
+                temp_weightage = self.ratings[k, item_id] * self.user_similarities[user_id, k]
+                #print('weightage',self.ratings[k, item_id],self.user_similarities[user_id, k])
+                weightage_of_item.append(temp_weightage)
+                similarities.append(self.user_similarities[user_id, k])
+        if len(weightage_of_item)==0:
+            return 0
+        try:
+            return int(round(sum(weightage_of_item)/sum(similarities),0))
+        except:
+            return 0
+
+    def predict_for_user(self, user_id, limit_similar_users=10):
         top_10_similar_users = core.reverse_argsort(self.user_similarities[user_id])[1:limit_similar_users]
 
         value = []
@@ -135,15 +177,11 @@ class Simple_CollaborativeFiltering:
             if self.ratings[user_id, i] != 0:
                 value.append(0)
                 continue
-            weightage_of_item = []
-            for k in top_10_similar_users:
-                weightage_of_item.append(self.ratings[k, i] * self.user_similarities[user_id, k])
-            weightage_of_item = sum(weightage_of_item)
-            value.append(weightage_of_item)
+            value.append(self.predict_rating([user_id,i], limit_similar_users=limit_similar_users))
 
         return core.reverse_argsort(value)
 
-    def export(self, limit_columns = 10):
+    def export(self, starting_user = 670,limit_columns = 10):
         data = {}
         name = self.__class__.__name__ +'_'
 
@@ -154,17 +192,17 @@ class Simple_CollaborativeFiltering:
             raw.append(top_10_similar_users[:limit_columns])
 
         df = pd.DataFrame(raw)
-        df['userId']=df.index.values
+        df['userId']=df.index.values+starting_user
 
         data[name+'similar_user'] = df
 
         # User Based Recommendation
         raw = []
-        for i in trange(self.user_similarities.shape[0], desc=name+'User Based Recommendation'):
+        for i in trange(starting_user,self.user_similarities.shape[0], desc=name+'User Based Recommendation'):
             raw.append(self.predict_for_user(i)[1:limit_columns])
 
         df = pd.DataFrame(raw)
-        df['userId']=df.index.values
+        df['userId']=df.index.values+starting_user
         data[name+'user_recommendation'] = df
 
 
@@ -178,6 +216,78 @@ class Simple_CollaborativeFiltering:
         data[name+'item_recommendation'] = df
 
         return data
+
+#from scipy.linalg import svd # ValueError: Sparse matrices are not supported by this function. Perhaps one of the scipy.sparse.linalg functions would work instead.
+
+from scipy.sparse.linalg import svds
+
+class SVD_CollaborativeFiltering:
+
+    def resize_fill_zeros(self,matrix, shape):
+        # Make matrix with new shape
+        temp = np.zeros((shape[0], shape[1]))
+
+        # Fill the values from original shape
+        temp[:matrix.shape[0], :matrix.shape[1]] = matrix
+        return temp
+
+    def fit(self, matrix, singular_values = 5):
+        matrix = matrix.asfptype()
+        self.original_matrix = matrix
+        self.matrix_mean = np.mean(self.original_matrix)
+        matrix.data -= self.matrix_mean
+        #print('Mean',self.matrix_mean)
+
+        self.U , self.s, self.v = svds(matrix, k=singular_values)
+        #print('Original Shape', matrix.shape)
+        #print('U',self.U.shape)
+        #print('S',self.s.shape)
+        #print('V',self.v.shape)
+
+
+        # for multiplication
+        # U (m x m) . Sigma (m x n) . V^T (n x n)
+
+        Sigma = np.zeros((matrix.shape[0], matrix.shape[1]))
+        #print('Sigma', Sigma.shape)
+        Sigma[:self.s.shape[0], :self.s.shape[0]] = np.diag(self.s)
+
+
+        self.U = self.resize_fill_zeros(self.U, (matrix.shape[0],matrix.shape[0]))
+        #self.s = self.resize_fill_zeros(self.s, (matrix.shape[0],matrix.shape[1]))
+        self.v = self.resize_fill_zeros(self.v, (matrix.shape[1],matrix.shape[1]))
+
+        self.predicted_matrix = self.U.dot(Sigma.dot(self.v)) + self.matrix_mean
+
+    def recommend(self, user_id):
+
+        ratings_by_user = self.original_matrix[user_id]
+        indexes = (ratings_by_user[0]==0).indices
+        predictions_at_indexes = self.predicted_matrix[user_id,indexes]
+
+        #print('indexes',indexes)
+        #print('predictions',predictions_at_indexes)
+
+        recommendation = core.sort_list_using_another(to_sort=indexes, sort_order=predictions_at_indexes)[::-1]
+
+        return recommendation
+
+    def export(self,  starting_user = 670,limit = 10):
+        self.limit = limit
+        name = self.__class__.__name__+'_'
+
+        raw = []
+        for i in trange(starting_user, self.original_matrix.shape[0], desc=name + ' User Based Recommendation'):
+            raw.append(self.recommend(i)[:limit])
+
+        raw = list(map(str,raw))
+        data = {}
+        df = pd.DataFrame(raw, columns=['recommendation'])
+        df['userId'] = df.index.values + starting_user
+        data[name + 'user_recommendation'] = df
+        return data
+
+
 
 class Simple_ContentBasedFiltering:
 
@@ -258,3 +368,231 @@ class Normalised_ContentBasedFiltering:
         self.normalise_mapper['movieId'] = self.normalise_mapper.index.values
 
         return {name+'map': self.normalise_mapper, name+'data':self.normalised_data, name+'similarity': df}
+
+
+"""
+Text Learning
+"""
+
+def remove_punctuations(sentence):
+    translator = sentence.maketrans('', '', string.punctuation)
+    return sentence.translate(translator)
+
+#remove_punctuations('Hello it\,s me!')
+
+class BagOfWords:
+    def _add_to_vocabulary(self, words):
+        for i in words:
+            self.vocabulary[i] = self.word_index
+            self.word_index += 1
+
+    def get_words(self, sentence):
+        return remove_punctuations(sentence).lower().split(' ')
+
+    def fit(self, text):
+        self.vocabulary = {}
+        self.word_index = 0
+        for i in text:
+            words = self.get_words(i)
+            words_not_captured = [i for i in words if i not in self.vocabulary]
+            self._add_to_vocabulary(words_not_captured)
+
+    def transform(self, text):
+        word_matrix = []
+        for i in range(len(text)):
+            words = self.get_words(text[i])
+
+            unique_words = set(words)
+
+            for j in unique_words:
+                count = words.count(j)
+                word_matrix.append([i, self.vocabulary[j], count])
+
+        return pd.DataFrame(word_matrix, columns=['sentence', 'word', 'occurance'])
+
+class Bag_of_Words_ContentBasedFiltering:
+
+
+    def fit(self, movie_titles, minimum_similarity=0.5):
+        self.minimum_similarity = minimum_similarity
+        movie_titles = movie_titles['title'].values.tolist()
+        self.engine = BagOfWords()
+
+        self.engine.fit(movie_titles)
+        self.word_vector = self.engine.transform(movie_titles)
+
+        sparse_matrix = csr_matrix((self.word_vector['occurance'], (self.word_vector['sentence'], self.word_vector['word'])))
+
+        self.similar_movies = self.similarity(sparse_matrix)
+
+        return self.similar_movies
+
+    def similarity(self, sparse_matrix):
+        similarity = core.pairwise_cosine(sparse_matrix)
+        np.fill_diagonal(similarity, 0)
+
+        similar_movies = []
+        for i in range(len(similarity)):
+            condition_check = similarity[i] > self.minimum_similarity
+
+            similar_names = np.where(condition_check)[0].tolist()
+            if len(similar_names):
+                similarity_of_names = similarity[i][condition_check].tolist()
+                similar_names_sorted = core.sort_list_using_another(to_sort=similar_names, sort_order=similarity_of_names)[::-1]
+                similar_movies.append([i,similar_names])
+        return pd.DataFrame(similar_movies, columns=['movieId','similar'])
+    #
+    # def predict(self, item_id):
+    #     arguments_sorted = core.reverse_argsort(self.item_similarities[item_id])
+    #     # select everything except item_id; else same movie will be recommended
+    #     arguments_sorted = arguments_sorted[arguments_sorted!=item_id]
+    #     return arguments_sorted
+    #
+
+    def trim_by_limit(self, list1):
+
+        if len(list1) > self.limit:
+            list1 = list1[:self.limit]
+        return list1
+
+    def export(self, limit = 10):
+        self.limit = limit
+        name = self.__class__.__name__
+
+        similar_movies = self.similar_movies
+        similar_movies['similar'] = similar_movies['similar'].map(self.trim_by_limit)
+        similar_movies['similar'] = similar_movies['similar'].map(str)
+
+        vocabulary = self.engine.vocabulary
+        vocabulary = pd.DataFrame([vocabulary.keys(), vocabulary.values()]).transpose()
+        vocabulary.columns = ['word', 'value']
+
+        return {name+'_recommend':similar_movies, name+'_vocabulary':vocabulary, name+'_wordvector':self.word_vector}
+
+    #     raw = []
+    #     name = self.__class__.__name__
+    #     for i in trange(self.item_similarities.shape[0], desc=name):
+    #         raw.append(self.predict(i)[:limit])
+    #
+    #     df = pd.DataFrame(raw)
+    #     df['movieId']=df.index.values
+    #     return {name: df}
+
+class Collaborative_Via_Content:
+
+    def fit(self, user_ratings, movie_info):
+        self.user_ratings = user_ratings
+        self.movie_info = movie_info
+
+        self.generate_all_profiles()
+        self.all_profiles = self.all_profiles.fillna(0)
+        self.user_similarities = core.pairwise_cosine(self.all_profiles)
+
+    def generate_profile(self, userid):
+
+        # get all movies rated by user and how much they are rated
+
+        user_actions = self.user_ratings[userid]
+        movies, ratings = user_actions.indices, user_actions.data
+
+        # Get for each movie get its type matrix and multiply by ratings
+
+        weightage_to_movies = self.movie_info.iloc[movies].multiply(ratings, axis='index')
+
+        # Find sum of all of these
+
+        summation = weightage_to_movies.sum()
+
+        # divide the sum by max value
+
+        max_value = summation.max()
+
+        profile = summation / max_value
+
+        return profile
+
+    def generate_all_profiles(self):
+
+        all_profiles = []
+        for i in range(0,self.user_ratings.shape[0]):
+            all_profiles.append(self.generate_profile(i))
+        self.all_profiles = pd.DataFrame(all_profiles)
+
+        pass
+
+    def recommendation_for_user(self, user_id, limit_similar_users=10):
+        #top_10_similar_users = core.reverse_argsort(self.user_similarities[user_id])[1:limit_similar_users]
+
+        value = []
+
+        #items_not_rated_yet = list(np.where(self.ratings[user_id] == 0))
+        for i in range(self.user_ratings.shape[0]):
+            if self.user_ratings[user_id, i] != 0:
+                value.append(0)
+                continue
+            value.append(self.predict_rating(user_id,item_id=i, limit_similar_users=limit_similar_users))
+
+        return core.reverse_argsort(value)
+
+    def predict_rating(self, user_id,item_id, limit_similar_users=10):
+        top_10_similar_users = core.reverse_argsort(self.user_similarities[user_id])[1:limit_similar_users]
+
+        value = []
+        weightage_of_item = []
+        similarities = []
+        for k in top_10_similar_users:
+            if self.user_ratings[k, item_id]:
+                temp_weightage = self.user_ratings[k, item_id] * self.user_similarities[user_id, k]
+                #print('weightage',self.ratings[k, item_id],self.user_similarities[user_id, k])
+                weightage_of_item.append(temp_weightage)
+                similarities.append(self.user_similarities[user_id, k])
+        if len(weightage_of_item)==0:
+            return 0
+        try:
+            return sum(weightage_of_item)/sum(similarities)
+        except:
+            return 0
+
+    def export(self, starting_user = 670, limit = 10):
+        self.limit = limit
+        name = self.__class__.__name__
+
+        data = {}
+
+        temp_all_profiles = self.all_profiles
+        temp_all_profiles['userId'] = temp_all_profiles.index.values
+        all_recommendations = []
+
+        for i in trange(starting_user, self.user_ratings.shape[0], desc=name + ' User Based Recommendation'):
+            all_recommendations.append(list(self.recommendation_for_user(i)[:limit]))
+        all_recommendations = list(map(str,all_recommendations))
+
+        df = pd.DataFrame(all_recommendations, columns=['recommendation'])
+        df['userId'] = df.index.values + starting_user
+
+        return {name+'_userprofile':temp_all_profiles, name+'_user_recommendation':df}
+# Evaluation
+from sklearn.model_selection import train_test_split
+#
+class Evaluator:
+
+#     def split_train_test(self, df, test_size):
+#         train, test = train_test_split(df, test_size=test_size)
+#         return train, test
+#
+    # def r2(self):
+    #     pass
+
+    def rmse(self, actual, predicted):
+
+        temp=[]
+        for i,j in zip(actual,predicted):
+            temp.append((i-j)**2)
+
+        return np.sqrt(sum(temp))
+#     def mean_absolute_error(self):
+#         pass
+#     def mean_squared_error(self):
+#         pass
+#
+#     def evaluate_collaborative(self, function, test_df, evaluation_method):

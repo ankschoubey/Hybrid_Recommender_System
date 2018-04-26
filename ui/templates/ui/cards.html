@@ -19,8 +19,11 @@
 
                 <!--#TODO: Decision of whether to use names or not-->
 
-                <!--<div class="card-body">-->
-                    <!--<a class="card-title" href="{% url 'ui:movie_view' j %}" style="color:white; text-decoration:none">{{k.title}}</a>-->
+                <!--<div class="card-body" style="padding:0;vertical-align: middle;align:center;">-->
+                    <!--<center>-->
+                      <!--{% include 'ui/ratings_template.html' with movieid=j %}-->
+                        <!--</center>-->
+                    <!--&lt;!&ndash;<a class="card-title" href="{% url 'ui:movie_view' j %}" style="color:white; text-decoration:none">{{k.title}}</a>&ndash;&gt;-->
                 <!--</div>-->
             </div>
         </div>

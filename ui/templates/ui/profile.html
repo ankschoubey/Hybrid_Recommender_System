@@ -8,6 +8,9 @@
 
 {% if user_history|length > 0%}
 
+    {% if user_profile %}
+    {% include "ui/profile_pie.html" %}
+    {% endif %}
 <div class="table-responsive">
       <table class="table table-bordered table-hover">
           <thead class="thead-dark ">

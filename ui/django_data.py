@@ -2,10 +2,10 @@ from .models import Ratings
 from django.db.models import Sum
 from django.db.models import Avg
 from django.db.models import Count
-from .models import NormalisedContentbasedfilteringMap, NormalisedContentbasedfilteringSimilarity, SimpleCollaborativefilteringItemRecommendation, SimpleCollaborativefilteringUserRecommendation, SimpleContentbasedfiltering, Popularitybasedfiltering
+from .models import NormalisedContentbasedfilteringMap, NormalisedContentbasedfilteringSimilarity, SimpleCollaborativefilteringItemRecommendation, SimpleCollaborativefilteringUserRecommendation, SimpleContentbasedfiltering, Popularitybasedfiltering, BagOfWordsContentbasedfilteringRecommend, SvdCollaborativefilteringUserRecommendation, CollaborativeViaContentUserprofile,CollaborativeViaContentUserRecommendation
 from .data import JSON_formatter, Movielens
 from .core import random_order, get_column
-
+import json
 formatter = JSON_formatter()
 movie_lens = Movielens()
 numeric_values = [ 'number_0', 'number_1', 'number_2', 'number_3', 'number_4', 'number_5', 'number_6', 'number_7', 'number_8', 'number_9']
@@ -105,6 +105,39 @@ class DataFetcher:
                 pass
 
         return random_order(movies_list)
+
+    def fetch_BagOfWordsContentbasedfilteringRecommend(self, movieid):
+        try:
+            recommended = BagOfWordsContentbasedfilteringRecommend.objects.filter(movieid=movieid).values('similar')[0]['similar']
+        except:
+            return None
+        recommended = json.loads(recommended)
+        return recommended
+
+    def fetch_SvdCollaborativefilteringUserRecommendation(self, userid):
+        try:
+            recommended = SvdCollaborativefilteringUserRecommendation.objects.filter(userid=userid).values('recommendation')[0]['recommendation']
+        except:
+            return None
+        recommended = json.loads(recommended)
+        return recommended
+
+    def fetch_CollaborativeViaContentUserRecommendation(self, userid):
+        try:
+            recommended = CollaborativeViaContentUserRecommendation.objects.filter(userid=userid).values('recommendation')[0]['recommendation']
+        except:
+            return None
+        recommended = json.loads(recommended)
+        return recommended
+
+    def fetch_CollaborativeViaContentUserprofile(self, userid):
+        try:
+            profile = CollaborativeViaContentUserprofile.objects.filter(userid=userid).values()[0]
+            for i in ['id','index','userid']:
+                del profile[i]
+        except:
+            return None
+        return profile
 
     def normalised_data_fetch(movieid, limit = 10):
         movie_type = list(NormalisedContentbasedfilteringMap.objects.filter(movieid=movieid).values('normalised_key').values())[0]['normalised_key']

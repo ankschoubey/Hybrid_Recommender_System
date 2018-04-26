@@ -23,10 +23,11 @@ fetcher = DataFetcher()
 
 from .models import Movies
 
-blocked_movies = [266,713,2288,910 ,944 ,1456 ,2039 ,2141 ,3048 ,3104 ,3465 ,4157 ,4464 ,5336 ,6113 ,6963 ,7083 ,7546 ,8633 ,8721 ,8952,3083,3846,7060,4947,5370,6985]
+blocked_movies = [170, 266,713,2288,910 ,944 ,1456 ,2039 ,2141 ,3048 ,3104 ,3465 ,4157 ,4464 ,5336 ,6113 ,6963 ,7083 ,7546 ,8633 ,8721 ,8952,3083,3846,7060,4947,5370,6985]
 
 def remove_blocked_movies(movies):
-    return [i for i in movies if i not in blocked_movies]
+    return movies
+    #return [i for i in movies if i not in blocked_movies]
 
 def ajax_update_rating(request):
     if request.method == 'POST':
@@ -64,6 +65,9 @@ class Index(View):
         cf_user = None
         cf_item = None
         cb_item = None
+        svd_cf_user = None
+        cvc_hyb_user = None
+
         hybrid_recommendation = None
 
         if request.user.id:
@@ -85,6 +89,20 @@ class Index(View):
                 pass
 
             try:
+                svd_cf_user = fetcher.fetch_SvdCollaborativefilteringUserRecommendation(userid=user_id)
+                svd_cf_user = remove_blocked_movies(svd_cf_user)
+            except:
+                print('Fetched Value',fetcher.fetch_SvdCollaborativefilteringUserRecommendation(userid=user_id))
+                pass
+
+            try:
+                cvc_hyb_user = fetcher.fetch_CollaborativeViaContentUserRecommendation(userid=user_id)
+                cvc_hyb_user = remove_blocked_movies(cvc_hyb_user)
+            except:
+                print('Fetched Value',fetcher.fetch_CollaborativeViaContentUserRecommendation(userid=user_id))
+
+                pass
+            try:
                 movies = list(Ratings.objects.filter(userid = user_id, rating__gte=minimum_rating).order_by('-timestamp').values('movieid'))
                 movie_id_latest_movie = movies[0]['movieid']
                 movie_id_second_movie = movies[1]['movieid']
@@ -99,11 +117,11 @@ class Index(View):
                 cb_item = fetcher.fetch_SimpleContentbasedfiltering(movieid=movie_id_second_movie)
                 cb_item = remove_blocked_movies(cb_item)
 
-        recommendations_not_null = [i for i in [cf_user,cf_item,cb_item] if i]
+        recommendations_not_null = [i for i in [cf_user, svd_cf_user, cvc_hyb_user, cf_item, cb_item] if i]
 
         if len(recommendations_not_null)>1:
-            hybrid_recommendation = Hybridization.mixed(recommendations_not_null).tolist()
-            hybrid_recommendation = random_order(hybrid_recommendation)[:10]
+            hybrid_recommendation = Hybridization.mixed(recommendations_not_null)[:10]
+            #hybrid_recommendation = random_order(hybrid_recommendation)
 
         if hybrid_recommendation:
             key = 'Recommended for you'
@@ -114,6 +132,16 @@ class Index(View):
             key = 'Based on users similar to you'
             content[key] = cf_user
             meta[key] = {'subheading': 'User Based Collaborative Filtering'}
+
+        if svd_cf_user:
+            key = 'Another way of finding similar users'
+            content[key] = svd_cf_user
+            meta[key] = {'subheading': 'Collaborative Filtering using SVD'}
+
+        if cvc_hyb_user:
+            key = 'Collaborative Via Content Based'
+            content[key] = cvc_hyb_user
+            meta[key] = {'subheading': 'Feature Combination Hybridization'}
 
         if cf_item:
             key = 'People who watched ' + fetcher.movie_title(movie_id=movie_id_latest_movie) + ' also watched this:'
@@ -196,30 +224,80 @@ class MovieView(View):
     template_name = 'ui/movie_details.html'
 
     def get(self, request, pk):
-        pk = int(pk)
+        movieid = int(pk)
+
+        temp_response = {}
+
         response = {}
         meta = {}
-        response['detailed_movie'] = engine.format({'a':[pk]})['movies'][pk]
-        response['detailed_movie']['id'] = pk
+        response['detailed_movie'] = engine.format({'a':[movieid]})['movies'][movieid]
+        response['detailed_movie']['id'] = movieid
+
         #return HttpResponse(str(normalised_data_fetch(pk)))
 
-        similar_movies = remove_blocked_movies(normalised_data_fetch(pk))[:10]
-        user_who_like_this_also_liked = remove_blocked_movies(fetcher.fetch_SimpleCollaborativefiltering(movieid=pk))[:10]
+        movies_with_similar_name = fetcher.fetch_BagOfWordsContentbasedfilteringRecommend(movieid=pk)
+        if movies_with_similar_name:
+            movies_with_similar_name = list(movies_with_similar_name)
+            key = 'Movies with similar names'
+            temp_response[key] = movies_with_similar_name
+            meta[key] = {'subheading': 'Bag of Words Content Based Filtering'}
+            #return HttpResponse(str(movies_with_similar_name) + ' ' +str(type(movies_with_similar_name)))
 
-        data = engine.format({'Similar Movies':similar_movies,'Users who liked this also liked':user_who_like_this_also_liked})
-        response['similar_movies'] = similar_movies
-        response['user_who_like'] = user_who_like_this_also_liked
+        similar_movies = remove_blocked_movies(normalised_data_fetch(movieid))[:10]
+        key = 'Similar Movies'
+        temp_response[key] = similar_movies
+
+        user_who_like_this_also_liked = remove_blocked_movies(fetcher.fetch_SimpleCollaborativefiltering(movieid=movieid))[:10]
+        key = 'User who watched this also watched'
+        temp_response[key] = user_who_like_this_also_liked
+
+        data = engine.format(temp_response)
 
         meta['Similar Movies'] = {'subheading': 'Normalised Content Based Filtering'}
         meta['User who watched this also watched'] = {'subheading': 'Item based Collaborative Filtering'}
 
-        response['content'] = {'Similar Movies': similar_movies,'User who watched this also watched': user_who_like_this_also_liked}
+        response['content'] = temp_response
         response['movies'] = data['movies']
         response['meta']=meta
         return render(request, self.template_name, response)
         #return HttpResponse(str(response))
 
-
+    #
+    # def get(self, request, pk):
+    #     pk = int(pk)
+    #     response = {}
+    #     meta = {}
+    #     response['detailed_movie'] = engine.format({'a':[pk]})['movies'][pk]
+    #     response['detailed_movie']['id'] = pk
+    #     #return HttpResponse(str(normalised_data_fetch(pk)))
+    #
+    #     similar_movies = remove_blocked_movies(normalised_data_fetch(pk))[:10]
+    #     user_who_like_this_also_liked = remove_blocked_movies(fetcher.fetch_SimpleCollaborativefiltering(movieid=pk))[:10]
+    #
+    #     movies_with_similar_name = list(fetcher.fetch_BagOfWordsContentbasedfilteringRecommend(movieid=pk))
+    #
+    #     temp = {}
+    #
+    #     # if movies_with_similar_name:
+    #     #     temp['Movies with similar names'] = movies_with_similar_name
+    #     #     return HttpResponse('Movies with similar names'+str(movies_with_similar_name)+str(type(movies_with_similar_name)))
+    #     #
+    #     #     meta['Movies with similar names'] = {'subheading': 'Content Based Filtering using Bag of Words'}
+    #     temp['Similar Movies'] = similar_movies
+    #     temp['Users who liked this also liked'] = user_who_like_this_also_liked
+    #
+    #     data = engine.format(temp)
+    #
+    #     meta['Similar Movies'] = {'subheading': 'Normalised Content Based Filtering'}
+    #     meta['User who watched this also watched'] = {'subheading': 'Item based Collaborative Filtering'}
+    #
+    #     response['content'] = temp
+    #     response['movies'] = data['movies']
+    #     response['meta']=meta
+    #     return HttpResponse(str(response))
+    #
+    #     #return render(request, self.template_name, response)
+    #     #return HttpResponse(str(response))
 
 
 class UserFormView(View):
@@ -324,6 +402,7 @@ class Search(generic.ListView):
     def post(self, request, *args, **kwargs):
         search_term = request.POST.get('search_term')
         stuff = self.get_queryset().filter(title__icontains=search_term)
+        print(stuff.values())
         return render(request, self.template_name, {'object_list': stuff, 'search_term': search_term})
 
     def get_queryset(self):
@@ -346,6 +425,8 @@ class ProfileView(generic.View):
         user_id = request.user.id + 670
         data = {}
 
+
+
         all_info =  list(Ratings.objects.filter(userid=user_id).order_by('-timestamp').values_list('movieid', 'rating'))
         #movie_ids = get_column(all_info,0)
 
@@ -359,8 +440,9 @@ class ProfileView(generic.View):
             content.append(temp)
 
        # data['movies'] = JSON_formatter().format({'rated_movies':movie_ids})['movies']
+        data['user_profile'] = fetcher.fetch_CollaborativeViaContentUserprofile(user_id)
 
-        #return HttpResponse(str(content))
+        #return HttpResponse(str(data['user_profile']))
 
         data['user_history'] = content
 
